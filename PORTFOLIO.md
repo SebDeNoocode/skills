@@ -34,8 +34,11 @@ qonto-<name>/
 │   ├── qonto-<name>.md    ← the Agent Skill (import this .md, or the .zip)
 │   └── qonto-<name>.zip   ← ready to import in claude.ai (contains SKILL.md, as required)
 ├── Doc/                   ← docs: README + step-by-step guide + rich HTML/DOCX, all in EN & FR
-└── assets/                ← diagrams (how-it-works + functional), EN & FR, SVG + PNG
+├── assets/                ← diagrams (how-it-works + functional), EN & FR, SVG + PNG
+└── video/                 ← demo-qonto-<name>.mp4 — live demo, ≤ 3 minutes
 ```
+
+**Bonus:** [`how-to-import-a-skill.mp4`](how-to-import-a-skill.mp4) — a 20-second walkthrough of importing any of these skills into claude.ai (Settings → Skills → Import).
 
 ## Install
 
