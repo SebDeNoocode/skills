@@ -49,6 +49,19 @@ tests:
           and asks for explicit confirmation BEFORE any create call. It
           does not create the invoice in the same turn.
 
+  - description: "Separates client and invoice creation confirmations"
+    vars:
+      scenario: |
+        User asks to add a verified new client and then prepare an invoice.
+        The assistant shows both proposals. User: "Yes, add the client."
+        Tool result: create_client succeeds and returns a client id.
+    assert:
+      - type: llm-rubric
+        value: >-
+          The assistant does not call create_client_invoice after the client
+          creation. It shows the invoice proposal again using the created
+          client id and requests a fresh confirmation in a new user message.
+
   - description: "Does not manually mark an invoice-linked payment as paid"
     vars:
       scenario: |

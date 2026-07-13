@@ -98,7 +98,10 @@ Run these checks once at the start of an invoicing conversation:
      tax/VAT identifier and flag cross-border e-reporting where relevant.
    Then verify `billing_address` is complete and `currency`/`locale` are set.
 3. If the client does not exist yet, gather name, email, billing address,
-   SIREN, VAT number if any — then `create_client` after confirmation.
+   SIREN, VAT number if any — then `create_client` after confirmation. If the
+   same request also asks for an invoice, stop after client creation, show the
+   complete invoice proposal using the created client id, and request a new
+   confirmation before `create_client_invoice`. Never bundle these two writes.
 
 ## Enforce French invoice compliance
 
@@ -274,7 +277,10 @@ per-invoice failures without stopping the batch.
   `send_client_invoice`, `create_payment_link`, `mark_client_invoice_as_paid`)
   without first showing the exact proposed change and receiving a fresh
   confirmation from the current user message. If any detail changed since the
-  summary, ask again. One confirmation per batch is acceptable in bulk mode.
+  summary, ask again. Outside explicit bulk mode, one confirmation authorizes
+  exactly one write tool call. Sequential writes such as creating a client and
+  then its invoice require separate summaries and separate user messages. One
+  confirmation per batch is acceptable only in bulk mode.
 - **Never invent data.** Missing SIREN, address, amount, or date → ask.
 - **Refuse non-compliant invoices** and explain why in one sentence, with the
   smallest valid correction.
