@@ -195,10 +195,10 @@ sending is a write and always needs a fresh confirmation.
    name, line-item titles, issue date, due date, currency, totals, and payment
    instructions. Do not invent missing values or expose administrative fields
    that the recipient does not need.
-3. If a payment page was created for this same invoice, include its
-   returned URL. Never insert a URL from another invoice or fabricate one. If
-   payment links are unavailable, say that payment can be made using the bank
-   details shown on the invoice; do not create a standalone link as a fallback.
+3. Ask which payment instructions to include: the bank-transfer details shown
+   on the invoice, a payment page linked to that invoice, or both. If a payment
+   page was created for this same invoice, include its returned URL. Never
+   insert a URL from another invoice or fabricate one.
 4. Choose recipients from an address the user supplied or the client's stored
    email. If both differ, ask which to use. `send_to` may contain several
    addresses. Also show `copy_to_self`, `email_title`, and the complete
@@ -213,14 +213,17 @@ sending is a write and always needs a fresh confirmation.
 Payment links need a one-time activation in the Qonto web app first. If
 `create_payment_link` reports the org has not set them up, tell the user to
 activate payment links in Qonto, then retry — activation is not an MCP tool.
-Offer a contextual invoice email as the fallback so the client can pay using
-the bank details shown on the invoice. Never silently replace an invoice-linked
-link with a standalone link.
+Bank transfer remains a separate collection option using the details shown on
+the invoice. Ask whether the user wants to proceed with bank transfer, activate
+Payment Links and retry, or leave the invoice unchanged. Never silently replace
+an invoice-linked link with a standalone link or select bank transfer for them.
 
-1. After an invoice exists, offer a card payment link. On yes, confirm amount,
-   then `create_payment_link` (invoice variant: `invoice_id`, `invoice_number`,
-   `debitor_name`, amount). For a pure test, a standalone link is possible on
-   explicit request — state clearly it is not tied to an invoice.
+1. After an invoice exists, offer the collection choices: bank transfer,
+   invoice-linked payment page, or both. If the user selects a payment page,
+   confirm the amount, then call `create_payment_link` (invoice variant:
+   `invoice_id`, `invoice_number`, `debitor_name`, amount). For a pure test, a
+   standalone link is possible on explicit request — state clearly it is not
+   tied to an invoice.
 2. Return the link URL and offer to include it in a contextual invoice email.
 3. **Payment check**: on "has X paid?", call `get_payment_link` and inspect
    `payments[]`. You may poll every ~30 seconds up to 10 minutes **while the
@@ -300,9 +303,10 @@ invoice-linked payment page, draft the complete email from Qonto data, show the
 recipient, subject, body, and copy setting, then wait for confirmation before
 calling `send_client_invoice`.
 
-### Fall back when payment pages are unavailable
+### Choose bank transfer when Payment Links is unavailable
 
 User: "Send the invoice even though Payment Links is not activated."
 
-Action: draft an email that refers to the bank details shown on the invoice.
-Do not create a standalone payment link or send the email without confirmation.
+Action: explain that Payment Links requires activation and ask whether to draft
+an email using the bank details shown on the invoice. Do not choose that option
+for the user, create a standalone link, or send without confirmation.

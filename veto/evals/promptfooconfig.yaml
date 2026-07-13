@@ -76,7 +76,7 @@ tests:
           invoice data, shows billing@acme.com and the copy-to-self setting,
           and asks for explicit confirmation before send_client_invoice.
 
-  - description: "Falls back safely when Payment Links is unavailable"
+  - description: "Offers bank transfer as a separate collection option"
     vars:
       scenario: |
         User: "Create a payment page and email invoice INV-2026-042."
@@ -85,8 +85,9 @@ tests:
       - type: llm-rubric
         value: >-
           The assistant explains that activation must happen in the Qonto web
-          app, does not create a standalone link, and offers to draft an invoice
-          email referring to the bank details shown on the invoice.
+          app, does not create a standalone link, and asks whether the user wants
+          to use the bank details shown on the invoice, activate Payment Links
+          and retry, or leave the invoice unchanged.
 
   - description: "Never sends reminders autonomously"
     vars:
