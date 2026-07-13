@@ -2,7 +2,7 @@
 
 **Qonto × Anthropic MCP Hackathon submission**
 
-> **3-minute demo:** _link added before submission._
+> **3-minute demo:** [Watch Veto run with Qonto](https://www.loom.com/share/68ef7d5afa604f1ab390b0dc6ded92b4)
 
 AI agents can create, finalize and send invoices through Qonto. Veto adds the
 decision layer before those actions: verify the customer, review the invoice,
