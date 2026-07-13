@@ -55,8 +55,8 @@ Veto distinguishes:
 - `INVALID` — stop before invoice creation and request corrected data;
 - `MISMATCH` — the number is valid but the locally compared name differs, so
   require human review;
-- `NOT_PROCESSED` — the Member State did not disclose identity data; do not
-  report a mismatch;
+- `NOT_PROCESSED` — no claimed name was supplied or the Member State did not
+  disclose identity data; do not report a mismatch;
 - `UNAVAILABLE` — timeout, rate limit, global service failure or Member-State
   outage; never report the VAT number as invalid.
 

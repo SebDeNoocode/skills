@@ -148,7 +148,7 @@ def parse_soap_response(xml: str, claimed_name: str) -> VatResult:
 
     official_name = _text(root, "traderName") or _text(root, "name")
     official_address = _text(root, "traderAddress") or _text(root, "address")
-    if official_name is None:
+    if official_name is None or not claimed_name.strip():
         name_match = IdentityMatch.NOT_PROCESSED
     elif _normalize_name(official_name, country_code) == _normalize_name(
         claimed_name, country_code
@@ -242,18 +242,25 @@ def check_vat(request: VatCheckRequest) -> VatResult:
 
 
 def main() -> int:
-    if len(sys.argv) not in {4, 6}:
-        print(
-            "Usage: vies_eu.py <country> <vat> <name> OR "
-            "vies_eu.py <country> <vat> <requester_country> "
-            "<requester_vat> <name>"
-        )
-        return 2
-    request = (
-        VatCheckRequest(sys.argv[1], sys.argv[2], None, None, sys.argv[3])
-        if len(sys.argv) == 4
-        else VatCheckRequest(*sys.argv[1:])
-    )
+    match sys.argv[1:]:
+        case [country, vat]:
+            request = VatCheckRequest(country, vat, None, None, "")
+        case [country, vat, name]:
+            request = VatCheckRequest(country, vat, None, None, name)
+        case [country, vat, requester_country, requester_vat]:
+            request = VatCheckRequest(
+                country, vat, requester_country, requester_vat, ""
+            )
+        case [country, vat, requester_country, requester_vat, name]:
+            request = VatCheckRequest(
+                country, vat, requester_country, requester_vat, name
+            )
+        case _:
+            print(
+                "Usage: vies_eu.py <country> <vat> [name] OR vies_eu.py "
+                "<country> <vat> <requester_country> <requester_vat> [name]"
+            )
+            return 2
     result = check_vat(request)
     print(json.dumps(asdict(result), ensure_ascii=False, indent=2))
     match result:

@@ -77,14 +77,17 @@ Run these checks once at the start of an invoicing conversation:
    - French B2C (`individual`): do NOT demand a SIREN. Flag that B2C
      e-reporting may apply and is outside this skill's MCP workflow.
    - EU B2B client: do NOT demand a French SIREN. Require the client's EU VAT
-     number. If the organization has its own EU VAT number, run the qualified
-     check `python3 scripts/vies_eu.py <country> <vat> <seller_country>
-     <seller_vat> "<claimed legal name>"`. Otherwise run the basic check
-     `python3 scripts/vies_eu.py <country> <vat> "<claimed legal name>"` and
-     state that no consultation reference is available. `VALID` supports the
-     taxable-person preflight;
-     compare any returned name locally and show the official consultation
-     reference. `INVALID` blocks invoice creation until corrected. `MISMATCH`
+     number and verify it immediately; a claimed legal name is not a
+     prerequisite for the validity check. If the organization has its own EU
+     VAT number, run `python3 scripts/vies_eu.py <country> <vat>
+     <seller_country> <seller_vat> ["<claimed legal name>"]`. Otherwise run
+     `python3 scripts/vies_eu.py <country> <vat> ["<claimed legal name>"]` and
+     state that no consultation reference is available. If no claimed name was
+     supplied, report the validity result first. `INVALID` blocks invoice
+     creation without requesting a name. For `VALID`, request the claimed legal
+     name only if an identity comparison is still needed before invoicing, then
+     rerun the check with that name. Compare any returned name locally and show
+     the official consultation reference. `MISMATCH`
      and `NOT_PROCESSED` require review. Never downgrade a deterministic
      `MISMATCH` based on a plausible explanation; only a script result of
      `MATCH` establishes a local name match. `UNAVAILABLE`, `TIMEOUT`, rate limits,
@@ -119,6 +122,9 @@ cannot infer (VAT status, transaction scope, legal rate selection). You must:
   A seller without an EU VAT number may use the basic VIES check. Do not block
   the lookup solely because requester VAT is unavailable; disclose that the
   result has no requester-bound consultation reference.
+  Do not delay a validity-only lookup to collect a claimed legal name. Without
+  one, report name comparison as `NOT_PROCESSED`; request the name only after a
+  `VALID` result when identity matching is required for the invoice workflow.
 - **Deterministic checks**: for SIREN/SIRET, VAT rates, and reminder penalties,
   prefer running the bundled validator. From the skill directory:
   `python3 scripts/validate_fr.py siren <number>` / `vat <rate>` /

@@ -111,6 +111,13 @@ def test_parse_valid_response_handles_identity_not_returned() -> None:
     assert result.name_match is IdentityMatch.NOT_PROCESSED
 
 
+def test_parse_valid_response_without_claimed_name_skips_identity_match() -> None:
+    result = parse_soap_response(VALID_SOAP, "")
+
+    assert isinstance(result, ValidVat)
+    assert result.name_match is IdentityMatch.NOT_PROCESSED
+
+
 def test_parse_invalid_response_is_not_an_outage() -> None:
     result = parse_soap_response(INVALID_SOAP, "Example SRL")
 

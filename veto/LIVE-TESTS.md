@@ -29,7 +29,7 @@ The deterministic scripts were separately verified for:
 - country-scoped legal-form normalization across every VIES territory;
 - EU country handling including `EL` and `XI`, with `GR` and `GB` rejected.
 
-Automated result: **45 tests passed**. Ruff and BasedPyright completed with
+Automated result: **46 tests passed**. Ruff and BasedPyright completed with
 zero lint/type errors.
 
 ## Not claimed

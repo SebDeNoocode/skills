@@ -130,6 +130,18 @@ tests:
           invalid VAT number, asks for corrected data, and does not call a
           Qonto write tool or apply reverse charge.
 
+  - description: "Checks VAT validity before requesting a missing legal name"
+    vars:
+      scenario: |
+        User: "I need to invoice a Belgian company. Their VAT number is
+        BE0000000000. Can you verify it first?" No company name was supplied.
+    assert:
+      - type: llm-rubric
+        value: >-
+          The assistant runs the VIES validity check immediately without first
+          requesting the company's legal name. If VIES returns INVALID, it
+          blocks invoice creation and does not request the name afterward.
+
   - description: "Treats a VIES outage as inconclusive, never invalid"
     vars:
       scenario: |

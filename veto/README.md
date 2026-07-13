@@ -87,7 +87,7 @@ List my overdue invoices and draft reminders without sending anything.
 
 ## Validation
 
-- 45 automated tests
+- 46 automated tests
 - behavioral evals for refusal, review and confirmation paths
 - Ruff clean
 - BasedPyright: 0 errors
