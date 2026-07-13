@@ -3,6 +3,8 @@ import pytest
 from scripts.vies_eu import (
     IdentityMatch,
     InvalidVat,
+    LEGAL_FORMS_BY_COUNTRY,
+    SUPPORTED_COUNTRIES,
     Unavailable,
     ValidVat,
     VatCheckRequest,
@@ -85,6 +87,20 @@ def test_parse_valid_response_reports_local_name_mismatch() -> None:
     assert result.name_match is IdentityMatch.MISMATCH
 
 
+def test_parse_valid_response_ignores_legal_form_tokens() -> None:
+    result = parse_soap_response(VALID_SOAP, "Example")
+
+    assert isinstance(result, ValidVat)
+    assert result.name_match is IdentityMatch.MATCH
+
+
+def test_parse_valid_response_keeps_substantive_name_difference() -> None:
+    result = parse_soap_response(VALID_SOAP, "Example Services")
+
+    assert isinstance(result, ValidVat)
+    assert result.name_match is IdentityMatch.MISMATCH
+
+
 def test_parse_valid_response_handles_identity_not_returned() -> None:
     soap = VALID_SOAP.replace("<traderName>EXAMPLE SRL</traderName>", "")
 
@@ -117,6 +133,26 @@ def test_basic_check_without_seller_vat_preserves_limited_evidence() -> None:
     assert isinstance(result, ValidVat)
     assert result.request_identifier == ""
     assert result.name_match is IdentityMatch.MATCH
+
+
+def test_basic_check_matches_name_without_leading_legal_form() -> None:
+    result = parse_soap_response(BASIC_SOAP, "QONTO")
+
+    assert isinstance(result, ValidVat)
+    assert result.name_match is IdentityMatch.MATCH
+
+
+def test_legal_form_normalization_is_country_specific() -> None:
+    soap = BASIC_SOAP.replace("<name>SAS Qonto</name>", "<name>SRL Qonto</name>")
+
+    result = parse_soap_response(soap, "QONTO")
+
+    assert isinstance(result, ValidVat)
+    assert result.name_match is IdentityMatch.MISMATCH
+
+
+def test_legal_form_dataset_covers_every_vies_territory() -> None:
+    assert LEGAL_FORMS_BY_COUNTRY.keys() == SUPPORTED_COUNTRIES
 
 
 def test_basic_check_request_omits_empty_requester_fields() -> None:

@@ -26,9 +26,10 @@ The deterministic scripts were separately verified for:
 - active and ambiguous French registry matches;
 - valid, invalid, unavailable and malformed VIES SOAP responses;
 - local identity match, mismatch and undisclosed-name outcomes;
+- country-scoped legal-form normalization across every VIES territory;
 - EU country handling including `EL` and `XI`, with `GR` and `GB` rejected.
 
-Automated result: **37 tests passed**. Ruff and BasedPyright completed with
+Automated result: **42 tests passed**. Ruff and BasedPyright completed with
 zero lint/type errors.
 
 ## Not claimed

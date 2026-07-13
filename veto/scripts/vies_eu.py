@@ -5,45 +5,46 @@ import json
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from enum import Enum
+from pathlib import Path
+from types import MappingProxyType
 from typing import Final, assert_never
 
 VIES_HOST: Final = "ec.europa.eu"
 VIES_PATH: Final = "/taxation_customs/vies/services/checkVatService"
 SOAP_NAMESPACE: Final = "urn:ec.europa.eu:taxud:vies:services:checkVat:types"
 SUPPORTED_COUNTRIES: Final = frozenset(
-    {
-        "AT",
-        "BE",
-        "BG",
-        "CY",
-        "CZ",
-        "DE",
-        "DK",
-        "EE",
-        "EL",
-        "ES",
-        "FI",
-        "FR",
-        "HR",
-        "HU",
-        "IE",
-        "IT",
-        "LT",
-        "LU",
-        "LV",
-        "MT",
-        "NL",
-        "PL",
-        "PT",
-        "RO",
-        "SE",
-        "SI",
-        "SK",
-        "XI",
-    }
+    "AT BE BG CY CZ DE DK EE EL ES FI FR HR HU IE IT LT LU LV MT NL PL PT RO SE SI SK XI".split()
 )
+
+
+class LegalFormsDataError(RuntimeError):
+    pass
+
+
+def _load_legal_forms() -> Mapping[str, tuple[tuple[str, ...], ...]]:
+    path = Path(__file__).resolve().parents[1] / "references" / "legal-forms-eu.txt"
+    forms: dict[str, set[tuple[str, ...]]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        country, separator, form = line.partition("|")
+        tokens = tuple(form.split())
+        if separator != "|" or country not in SUPPORTED_COUNTRIES or not tokens:
+            raise LegalFormsDataError(f"invalid legal-form row: {line!r}")
+        forms.setdefault(country, set()).add(tokens)
+    missing = SUPPORTED_COUNTRIES.difference(forms)
+    if missing:
+        raise LegalFormsDataError(f"missing legal forms for: {sorted(missing)}")
+    return MappingProxyType(
+        {
+            country: tuple(sorted(country_forms, key=lambda item: (-len(item), item)))
+            for country, country_forms in forms.items()
+        }
+    )
+
+
+LEGAL_FORMS_BY_COUNTRY: Final = _load_legal_forms()
 
 
 class IdentityMatch(str, Enum):
@@ -108,11 +109,25 @@ def _text(root: ET.Element, local_name: str) -> str | None:
     return None
 
 
-def _normalize_name(value: str) -> str:
+def _normalize_name(value: str, country_code: str) -> str:
     decomposed = unicodedata.normalize("NFKD", value)
-    return "".join(
-        character for character in decomposed if character.isalnum()
-    ).casefold()
+    without_marks = "".join(
+        character for character in decomposed if not unicodedata.combining(character)
+    )
+    tokens = (
+        "".join(
+            character if character.isalnum() else " " for character in without_marks
+        )
+        .casefold()
+        .split()
+    )
+    for legal_form in LEGAL_FORMS_BY_COUNTRY[country_code]:
+        size = len(legal_form)
+        if len(tokens) > size and tuple(tokens[:size]) == legal_form:
+            return "".join(tokens[size:])
+        if len(tokens) > size and tuple(tokens[-size:]) == legal_form:
+            return "".join(tokens[:-size])
+    return "".join(tokens)
 
 
 def parse_soap_response(xml: str, claimed_name: str) -> VatResult:
@@ -143,7 +158,9 @@ def parse_soap_response(xml: str, claimed_name: str) -> VatResult:
     official_address = _text(root, "traderAddress") or _text(root, "address")
     if official_name is None:
         name_match = IdentityMatch.NOT_PROCESSED
-    elif _normalize_name(official_name) == _normalize_name(claimed_name):
+    elif _normalize_name(official_name, country_code) == _normalize_name(
+        claimed_name, country_code
+    ):
         name_match = IdentityMatch.MATCH
     else:
         name_match = IdentityMatch.MISMATCH

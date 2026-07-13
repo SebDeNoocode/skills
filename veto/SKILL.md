@@ -85,7 +85,9 @@ Run these checks once at the start of an invoicing conversation:
      taxable-person preflight;
      compare any returned name locally and show the official consultation
      reference. `INVALID` blocks invoice creation until corrected. `MISMATCH`
-     and `NOT_PROCESSED` require review. `UNAVAILABLE`, `TIMEOUT`, rate limits,
+     and `NOT_PROCESSED` require review. Never downgrade a deterministic
+     `MISMATCH` based on a plausible explanation; only a script result of
+     `MATCH` establishes a local name match. `UNAVAILABLE`, `TIMEOUT`, rate limits,
      and member-state outages are inconclusive and must never be reported as an
      invalid VAT number. Greece uses `EL`; Northern Ireland uses `XI`; `GB` is
      outside VIES.

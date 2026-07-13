@@ -63,6 +63,12 @@ Veto distinguishes:
 Greece uses `EL` in VIES. Northern Ireland uses `XI` for the applicable scope.
 Great Britain (`GB`) is not covered by VIES.
 
+Local name comparison removes only legal forms assigned to the returned country.
+The bundled `legal-forms-eu.txt` is generated from active entries in GLEIF's ISO
+20275 Entity Legal Forms Code List and covers every VIES territory. Refresh it
+with `python3 scripts/update_legal_forms.py` when GLEIF publishes a new version.
+Unknown forms remain a mismatch and require review.
+
 ## Boundaries
 
 A registry or VIES result does not prove:

@@ -50,6 +50,8 @@ external payment requires separate confirmation.
   public registry and refuses ambiguous results.
 - `scripts/vies_eu.py` verifies EU VAT numbers through VIES SOAP and preserves
   the official consultation reference.
+- `scripts/update_legal_forms.py` refreshes country-scoped legal forms for every
+  VIES territory from GLEIF's ISO 20275 code list.
 - `scripts/validate_fr.py` validates SIREN/SIRET checksums, French VAT rates and
   late-payment calculations.
 - `references/customer-verification.md` defines registry and VIES evidence,
@@ -87,7 +89,7 @@ List my overdue invoices and draft reminders without sending anything.
 
 ## Validation
 
-- 37 automated tests
+- 42 automated tests
 - behavioral evals for refusal, review and confirmation paths
 - Ruff clean
 - BasedPyright: 0 errors
