@@ -3,6 +3,8 @@ from decimal import Decimal
 import pytest
 
 from scripts.validate_fr import calculate_penalty, check_siren, check_vat
+from scripts.registry_fr import AmbiguousMatch, CompanyMatch, RegistryResponse
+from scripts.registry_fr import parse_search_response
 
 
 def test_check_siren_accepts_valid_number() -> None:
@@ -61,3 +63,76 @@ def test_calculate_penalty_rejects_negative_days() -> None:
 def test_calculate_penalty_rejects_non_positive_amount() -> None:
     with pytest.raises(ValueError, match="amount must be positive"):
         _ = calculate_penalty(Decimal("0"), 20, Decimal("12.15"))
+
+
+def test_registry_selects_only_active_exact_postcode_match() -> None:
+    payload: RegistryResponse = {
+        "results": [
+            {
+                "siren": "819489626",
+                "nom_raison_sociale": "QONTO",
+                "etat_administratif": "A",
+                "siege": {
+                    "siret": "81948962600047",
+                    "adresse": "18 RUE DE NAVARIN 75009 PARIS",
+                    "code_postal": "75009",
+                },
+                "tva": ["FR10819489626"],
+            },
+            {
+                "siren": "981621840",
+                "nom_raison_sociale": "QONTO COM",
+                "etat_administratif": "C",
+                "siege": {
+                    "siret": "98162184000017",
+                    "adresse": "16 RUE DE NAVARIN 75009 PARIS",
+                    "code_postal": "75009",
+                },
+                "tva": None,
+            },
+        ]
+    }
+
+    result = parse_search_response(payload, "75009")
+
+    assert result == CompanyMatch(
+        legal_name="QONTO",
+        siren="819489626",
+        siret="81948962600047",
+        address="18 RUE DE NAVARIN 75009 PARIS",
+        postcode="75009",
+        vat_number="FR10819489626",
+    )
+
+
+def test_registry_requires_review_when_multiple_active_matches_remain() -> None:
+    payload: RegistryResponse = {
+        "results": [
+            {
+                "siren": "819489626",
+                "nom_raison_sociale": "QONTO",
+                "etat_administratif": "A",
+                "siege": {
+                    "siret": "81948962600047",
+                    "adresse": "18 RUE DE NAVARIN 75009 PARIS",
+                    "code_postal": "75009",
+                },
+                "tva": ["FR10819489626"],
+            },
+            {
+                "siren": "880118765",
+                "nom_raison_sociale": "QONTO SERVICES SA",
+                "etat_administratif": "A",
+                "siege": {
+                    "siret": "88011876500028",
+                    "adresse": "18 RUE DE NAVARIN 75009 PARIS",
+                    "code_postal": "75009",
+                },
+                "tva": ["FR11880118765"],
+            },
+        ]
+    }
+
+    result = parse_search_response(payload, "75009")
+
+    assert result == AmbiguousMatch(candidates=2)

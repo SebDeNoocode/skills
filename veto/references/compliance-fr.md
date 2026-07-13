@@ -1,10 +1,10 @@
-# French invoicing compliance — 2026 reference
+# French invoicing compliance for 2026
 
 Why this skill validates what it validates. Sources: CGI art. 242 nonies A,
 289 & 1737; Code de commerce L441-9/L441-10/D441-5; Loi de finances 2024
 art. 91 (e-invoicing reform); service-public.gouv.fr; impots.gouv.fr.
 
-## The 2026 e-invoicing reform — timeline
+## 2026 e-invoicing timeline
 
 | Date | Obligation | Who |
 |---|---|---|
@@ -12,18 +12,18 @@ art. 91 (e-invoicing reform); service-public.gouv.fr; impots.gouv.fr.
 | 1 Sept 2026 | ISSUE e-invoices | Large enterprises + ETI |
 | 1 Sept 2027 | ISSUE e-invoices | SMEs, TPE, micro-entrepreneurs |
 
-Qonto is a certified Plateforme Agréée (PA): invoices created through Qonto
-are generated as Factur-X (PDF/A-3 + embedded XML) after finalization and
-routed on the network. This skill's job is to make sure what goes in is
-compliant — the platform cannot fix missing data.
+Qonto is a Plateforme Agréée. Veto performs preflight checks on the customer
+and invoice data available through the Qonto MCP. Generation, routing and
+regulatory transmission remain the responsibility of Qonto and the applicable
+e-invoicing infrastructure.
 
-## The 4 NEW mandatory mentions (decree 2022-1299 / 2024-1195)
+## Four mandatory mentions
 
 1. **Client SIREN** — for French B2B buyers, 9 digits (SIRET 14 accepted).
    It does not apply to an individual/B2C buyer or a non-French buyer. Maps to Qonto client
-   field `tax_identification_number`. WITHOUT IT THE INVOICE CANNOT BE
-   ROUTED on the e-invoicing network (the directory resolves recipients by
-   SIREN). This is why the skill hard-blocks.
+   field `tax_identification_number`. Veto blocks a missing identifier because
+   the recipient record is incomplete for French B2B invoice preparation. It
+   does not claim network reachability until the routing directory confirms it.
 2. **Delivery address** when different from billing (goods only) — Qonto
    client field `delivery_address`.
 3. **Operation category** — goods (LB) / services (PS) / mixed (LBPS).
@@ -35,7 +35,7 @@ compliant — the platform cannot fix missing data.
 Note: mentions 3 and 4 live on the Qonto ORGANIZATION profile, not on the
 invoice payload. Advise the user to verify them once in Qonto settings.
 
-## Legal VAT rates (France)
+## French VAT rates
 
 | Rate | Use |
 |---|---|
@@ -51,7 +51,7 @@ Franchise en base (auto-entrepreneurs): exact mandatory wording
 The Qonto API accepts ANY decimal vat_rate — it does not validate against
 French legal rates. The skill must.
 
-## Late-payment mentions (all B2B invoices, art. L441-10 & D441-5)
+## Required B2B late-payment terms
 
 - Late-payment penalty terms must state the contractual rate or a valid
   formula such as the applicable ECB refinancing rate + 10 points. The
