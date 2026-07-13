@@ -11,6 +11,7 @@ from scripts.vies_eu import (
     build_soap_request,
     parse_country_code,
     parse_soap_response,
+    parse_vat_number,
 )
 
 VALID_SOAP = """<?xml version="1.0" encoding="UTF-8"?>
@@ -181,3 +182,16 @@ def test_country_code_accepts_supported_vies_territories(country_code: str) -> N
 def test_country_code_rejects_unsupported_territories(country_code: str) -> None:
     with pytest.raises(ValueError, match="not supported by VIES"):
         _ = parse_country_code(country_code)
+
+
+def test_vat_number_accepts_matching_country_prefix() -> None:
+    assert parse_vat_number("FR", "FR 10 819 489 626") == "10819489626"
+
+
+def test_vat_number_preserves_unprefixed_identifier() -> None:
+    assert parse_vat_number("FR", "10 819 489 626") == "10819489626"
+
+
+def test_vat_number_rejects_different_country_prefix() -> None:
+    with pytest.raises(ValueError, match="does not match"):
+        _ = parse_vat_number("FR", "BE0671495129")

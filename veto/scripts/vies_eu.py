@@ -70,11 +70,27 @@ class UnsupportedCountryError(ValueError):
         super().__init__(f"{country_code!r} is not supported by VIES")
 
 
+class VatCountryMismatchError(ValueError):
+    def __init__(self, expected: str, actual: str) -> None:
+        super().__init__(f"VAT prefix {actual!r} does not match country {expected!r}")
+
+
 def parse_country_code(value: str) -> str:
     country_code = value.strip().upper()
     if country_code not in SUPPORTED_COUNTRIES:
         raise UnsupportedCountryError(country_code)
     return country_code
+
+
+def parse_vat_number(country_code: str, value: str) -> str:
+    country = parse_country_code(country_code)
+    compact = "".join(character for character in value.upper() if character.isalnum())
+    if compact.startswith(country):
+        return compact[len(country) :]
+    prefix = compact[:2]
+    if prefix in SUPPORTED_COUNTRIES:
+        raise VatCountryMismatchError(country, prefix)
+    return compact
 
 
 def _text(root: ET.Element, local_name: str) -> str | None:
@@ -182,19 +198,20 @@ def build_soap_request(request: VatCheckRequest) -> bytes:
 
 
 def check_vat(request: VatCheckRequest) -> VatResult:
+    country = parse_country_code(request.country_code)
     requester_country = (
         parse_country_code(request.requester_country_code)
         if request.requester_country_code is not None
         else None
     )
     requester_vat = (
-        request.requester_vat_number.strip()
-        if request.requester_vat_number is not None
+        parse_vat_number(requester_country, request.requester_vat_number)
+        if requester_country is not None and request.requester_vat_number is not None
         else None
     )
     normalized = VatCheckRequest(
-        parse_country_code(request.country_code),
-        request.vat_number.strip(),
+        country,
+        parse_vat_number(country, request.vat_number),
         requester_country,
         requester_vat,
         request.claimed_name.strip(),
