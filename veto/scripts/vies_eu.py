@@ -5,12 +5,15 @@ import json
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
-from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
-from types import MappingProxyType
 from typing import Final, assert_never
+
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.legal_forms_eu import LEGAL_FORMS_BY_COUNTRY
 
 VIES_HOST: Final = "ec.europa.eu"
 VIES_PATH: Final = "/taxation_customs/vies/services/checkVatService"
@@ -18,33 +21,6 @@ SOAP_NAMESPACE: Final = "urn:ec.europa.eu:taxud:vies:services:checkVat:types"
 SUPPORTED_COUNTRIES: Final = frozenset(
     "AT BE BG CY CZ DE DK EE EL ES FI FR HR HU IE IT LT LU LV MT NL PL PT RO SE SI SK XI".split()
 )
-
-
-class LegalFormsDataError(RuntimeError):
-    pass
-
-
-def _load_legal_forms() -> Mapping[str, tuple[tuple[str, ...], ...]]:
-    path = Path(__file__).resolve().parents[1] / "references" / "legal-forms-eu.txt"
-    forms: dict[str, set[tuple[str, ...]]] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        country, separator, form = line.partition("|")
-        tokens = tuple(form.split())
-        if separator != "|" or country not in SUPPORTED_COUNTRIES or not tokens:
-            raise LegalFormsDataError(f"invalid legal-form row: {line!r}")
-        forms.setdefault(country, set()).add(tokens)
-    missing = SUPPORTED_COUNTRIES.difference(forms)
-    if missing:
-        raise LegalFormsDataError(f"missing legal forms for: {sorted(missing)}")
-    return MappingProxyType(
-        {
-            country: tuple(sorted(country_forms, key=lambda item: (-len(item), item)))
-            for country, country_forms in forms.items()
-        }
-    )
-
-
-LEGAL_FORMS_BY_COUNTRY: Final = _load_legal_forms()
 
 
 class IdentityMatch(str, Enum):
