@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Installer un skill Qonto — Guide</title>
+<style>
+  :root{
+    --violet:#6B4EFF; --violet-dark:#4A30D9; --violet-light:#F1EDFF;
+    --noir:#1D1B29; --blanc:#FFFFFF;
+    --bg:#FFFFFF; --card:#FFFFFF; --tint:#F7F5FF; --ink:#1D1B29; --muted:#5A5670;
+    --line:#E6E2F5; --hero-ink:#FFFFFF;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{--bg:#12101A; --card:#1D1B29; --tint:#242038; --ink:#EFEDF7; --muted:#A29DBE; --line:#332E4D}
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.6}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 1.2rem 3rem}
+
+  /* ---- Hero ---- */
+  .hero{background:linear-gradient(135deg,var(--noir) 0%,#2A2153 55%,var(--violet-dark) 100%);
+    background-size:200% 200%;animation:heroShift 14s ease-in-out infinite;
+    border-radius:0 0 26px 26px;padding:3.4rem 1.2rem 2.8rem;text-align:center;color:var(--hero-ink)}
+  @keyframes heroShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .hero .chip{display:inline-block;background:var(--violet);color:#fff;border-radius:999px;
+    padding:.32rem 1rem;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    animation:pop .7s cubic-bezier(.2,1.4,.4,1) both}
+  .hero h1{font-size:2.4rem;margin:.9rem 0 .5rem;font-family:'SF Mono',Menlo,monospace;
+    animation:rise .8s .15s cubic-bezier(.2,1,.3,1) both}
+  .hero p.sub{font-size:1.12rem;color:#CFC8F5;max-width:640px;margin:0 auto;animation:rise .8s .3s cubic-bezier(.2,1,.3,1) both}
+  .hero .badges{margin-top:1.4rem;display:flex;gap:.55rem;justify-content:center;flex-wrap:wrap}
+  .hero .badges span{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+    border-radius:999px;padding:.3rem .85rem;font-size:.8rem;animation:rise .7s both}
+  .hero .badges span:nth-child(1){animation-delay:.45s}.hero .badges span:nth-child(2){animation-delay:.55s}
+  .hero .badges span:nth-child(3){animation-delay:.65s}.hero .badges span:nth-child(4){animation-delay:.75s}
+  @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes rise{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+  /* ---- Sections ---- */
+  section{margin-top:2.6rem;opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+  section.vis{opacity:1;transform:none}
+  h2{font-size:1.45rem;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+  h2::before{content:"";display:inline-block;width:10px;height:28px;border-radius:5px;background:var(--violet)}
+  h3{font-size:1.05rem;color:var(--violet-dark);margin:1.2rem 0 .5rem}
+  @media(prefers-color-scheme:dark){h3{color:#A798FF}}
+  p{margin-bottom:.7rem}
+  ul{padding-left:1.3rem;margin-bottom:.7rem}
+  li{margin-bottom:.4rem}
+
+  /* ---- Pitch cards ---- */
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.9rem}
+  .pcard{background:var(--tint);border:1.5px solid var(--line);border-radius:14px;padding:1rem;
+    transition:transform .25s ease,border-color .25s ease}
+  .pcard:hover{transform:translateY(-4px);border-color:var(--violet)}
+  .pcard .n{display:inline-flex;width:1.7rem;height:1.7rem;align-items:center;justify-content:center;
+    border-radius:50%;background:var(--violet);color:#fff;font-weight:800;font-size:.85rem;margin-bottom:.5rem}
+  .pcard h4{font-size:.95rem;margin-bottom:.3rem}
+  .pcard p{font-size:.85rem;color:var(--muted);margin:0}
+
+  /* ---- Tables ---- */
+  .scroll{overflow-x:auto;border-radius:12px;border:1.5px solid var(--line)}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{background:var(--violet);color:#fff;text-align:left;padding:.6rem .8rem;font-size:.78rem;
+    text-transform:uppercase;letter-spacing:.05em}
+  td{padding:.6rem .8rem;border-top:1px solid var(--line);vertical-align:top}
+  tr:nth-child(even) td{background:var(--tint)}
+
+  /* ---- Diagrams ---- */
+  .diagram{border-radius:16px;overflow:hidden;border:1.5px solid var(--line);background:var(--blanc)}
+  .diagram img{width:100%;display:block}
+
+  /* ---- Security banner ---- */
+  .secu{background:linear-gradient(135deg,var(--noir),#2A2153);color:#fff;border-radius:16px;
+    padding:1.4rem 1.5rem;display:flex;gap:1.1rem;align-items:center}
+  .secu .lock{font-size:2.2rem;animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .secu p{margin:0;font-size:.95rem;color:#DDD8F8}
+  .secu b{color:#fff}
+
+  /* ---- Video script ---- */
+  .scene{display:flex;gap:1rem;margin-bottom:1rem;background:var(--card);border:1.5px solid var(--line);
+    border-radius:14px;padding:1rem 1.1rem}
+  .scene .tc{min-width:96px;font-family:'SF Mono',Menlo,monospace;font-weight:700;color:var(--violet-dark);font-size:.85rem}
+  @media(prefers-color-scheme:dark){.scene .tc{color:#A798FF}}
+  .scene .body h4{font-size:.92rem;margin-bottom:.35rem}
+  .scene .body .say{border-left:3px solid var(--violet);padding:.5rem .8rem;background:var(--tint);
+    border-radius:0 10px 10px 0;font-style:italic;font-size:.9rem}
+  .tip{background:var(--tint);border:1.5px dashed var(--violet);border-radius:12px;padding:.9rem 1rem;
+    font-size:.88rem;margin-bottom:1.1rem}
+
+  code{background:var(--tint);border:1px solid var(--line);border-radius:5px;padding:.08rem .38rem;
+    font-family:'SF Mono',Menlo,monospace;font-size:.84em;color:var(--violet-dark)}
+  @media(prefers-color-scheme:dark){code{color:#A798FF}}
+  footer{margin-top:3rem;text-align:center;color:var(--muted);font-size:.8rem}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}
+    section{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="chip">Hackathon Qonto × Anthropic · Install guide</span>
+  <h1>Installing a skill</h1>
+  <p class="sub">From file to first prompt in 2 minutes — claude.ai, Claude Desktop or Claude Code.</p>
+  <div class="badges">
+    <span>📦 .md ou .zip</span><span>♻️ No restart needed</span>
+    <span>⌨️ Invoke with “/”</span><span>🎬 22-second video included</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section>
+  <h2>🗺 The journey</h2>
+  <div class="diagram"><img src="../assets/parcours.en.png" alt="Import → new conversation → invoke → the skill works → result"></div>
+  <p style="margin-top:.6rem">🎬 On video: <a href="../video/qonto-skill-import.mp4"><strong>the import in 22 seconds</strong></a>.</p>
+</section>
+
+<section>
+  <h2>📋 Prerequisites</h2>
+  <div class="scroll"><table>
+    <tr><th>Prerequisite</th><th>Detail</th></tr>
+    <tr><td><b>The skill file: .md OR .zip</b></td><td>The <code>.md</code> alone is enough when it carries <code>name</code> and <code>description</code> in YAML frontmatter (all skills in this repo do). A <code>.zip</code> must contain a <code>SKILL.md</code> at its root — ready-made zips live in each skill's <code>skill/</code> folder.</td></tr>
+    <tr><td><b>Qonto connector connected</b></td><td>Settings → Connectors → Qonto → OAuth sign-in (your password is never shared). Without it the skill installs fine but has nothing to read.</td></tr>
+    <tr><td><b>Optional MCPs per skill</b></td><td>Gmail, Drive, Datagouv, Shopify… — detected dynamically; each skill degrades gracefully when absent.</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>1️⃣ Import (claude.ai / Claude Desktop)</h2>
+  <p><strong>Settings → Skills → Import a skill</strong>, then drop the <code>.zip</code> (or the <code>.md</code>):</p>
+  <div class="diagram"><img src="../assets/import-dialog.en.png" alt="claude.ai import dialog"></div>
+  <p style="margin-top:.6rem">Claude reads the YAML frontmatter and registers the skill.</p>
+</section>
+
+<section>
+  <h2>2️⃣ Use it: the “/” key</h2>
+  <p>In a <strong>new conversation</strong> (no restart needed — refresh + new chat if the skill doesn't show), type <code>/</code>, pick the skill and write your request after it — or just write the sentence in plain language, the skill's description auto-triggers it:</p>
+  <div class="diagram"><img src="../assets/slash-picker.png" alt="The / picker with a Qonto skill"></div>
+</section>
+
+<section>
+  <h2>3️⃣ Claude Code (CLI / VS Code)</h2>
+  <ul>
+    <li>Copy the <code>SKILL.md</code> into <code>~/.claude/skills/&lt;skill-name&gt;/</code></li>
+    <li><strong>Restart the session</strong> (skills load at startup)</li>
+    <li>Type <code>/qonto</code> → the skill shows in the autocomplete</li>
+  </ul>
+</section>
+
+<section>
+  <h2>✅ Check in 2 minutes</h2>
+  <ul>
+    <li>“<strong>List my Qonto accounts</strong>” → the connector answers (if not: reconnect the connector, not the skill)</li>
+    <li>Run the skill's example prompt (see its <code>PROCEDURE</code>)</li>
+    <li>The skill announces what it does, paginates properly, and says plainly what it cannot do</li>
+  </ul>
+</section>
+
+<section>
+  <h2>⚠️ The 3 classic pitfalls</h2>
+  <div class="scroll"><table>
+    <tr><th>Pitfall</th><th>Fix</th></tr>
+    <tr><td><code>.md</code> without YAML frontmatter → rejected</td><td>Use the repo files (all compliant)</td></tr>
+    <tr><td><code>SKILL.md</code> inside a zip subfolder → rejected</td><td>It must sit at the root (the provided zips are compliant)</td></tr>
+    <tr><td>Skill installed but Qonto connector missing</td><td>Connect the connector first — the skill runs on empty otherwise</td></tr>
+  </table></div>
+</section>
+
+<footer>Install guide · Hackathon Qonto × Anthropic MCP · July 2026<br>
+French version: <code>doc-skill-import.fr.html</code> · Vidéo : <code>video/qonto-skill-import.mp4</code></footer>
+
+</div>
+
+<script>
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); }
+  }), { threshold: 0.12 });
+  document.querySelectorAll('section').forEach(s => obs.observe(s));
+</script>
+</body>
+</html>
