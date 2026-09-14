@@ -1,0 +1,44 @@
+# Regenerates the marketplace manifests from the plugin directories after every merge to main.
+# Contributors never edit .claude-plugin/marketplace.json or .agents/plugins/marketplace.json.
+name: marketplace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "featured/**"
+      - "community/**"
+      - ".github/scripts/marketplace.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: marketplace
+  cancel-in-progress: false
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild the manifests
+        run: python3 .github/scripts/marketplace.py
+
+      - name: Commit them when they changed
+        run: |
+          if git diff --quiet -- .claude-plugin/marketplace.json .agents/plugins/marketplace.json; then
+            echo "manifests already up to date"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .claude-plugin/marketplace.json .agents/plugins/marketplace.json
+          git commit -s -m "Regenerate the marketplace manifests"
+          git push
