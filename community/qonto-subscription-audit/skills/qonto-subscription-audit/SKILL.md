@@ -1,6 +1,12 @@
 ---
 name: qonto-subscription-audit
 description: Complete recurring-spend audit for Qonto accounts. Inventories every recurring charge (cards AND direct debits) over 24–36 months, computes the TOTAL annualized subscription cost, classifies each line (✅ active · 👥 duplicate · 🧟 zombie, always user-confirmed · 🎣 trial gone paid), catches nascent subscriptions early (🌱 new counterparties that look like a starting subscription), detects silent price hikes step by step (old → new price, %, FX/VAT excluded), totals the cumulated annual overcost, renders a dashboard directly in Claude plus a self-contained HTML export in Qonto colors, and drafts renegotiation emails and an optional monthly digest (Gmail drafts, never sent). 100% read-only on Qonto. Use for "audite mes abonnements", "audit my subscriptions", "combien je paie d'abonnements par an ?", "which of my suppliers quietly raised their prices?", "what am I still paying for that I don't use?", "is this new charge a subscription?", "écris-moi l'email pour renégocier".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Subscription Audit
