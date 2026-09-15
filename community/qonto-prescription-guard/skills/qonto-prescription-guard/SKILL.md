@@ -1,6 +1,12 @@
 ---
 name: qonto-prescription-guard
 description: Legal expiry radar for unpaid client invoices on Qonto accounts (France). Every unpaid invoice has a legal death date — 5 years between businesses (art. L110-4 French Commercial Code), 2 years against a consumer (art. L218-2 French Consumer Code). The skill scans the full invoice history, qualifies each receivable B2B/B2C, detects clock-resetting events (partial payments found in transactions), and outputs an "act before…" schedule sorted by urgency × amount. 100% read-only, not legal advice. Use for "quelles factures vont être prescrites ?", "which unpaid invoices are legally dying?", "combien de temps me reste-t-il pour agir contre ce client ?", "audit prescription de mes créances", "is this old invoice still recoverable?".
+permissions:
+  mcp:
+    qonto: [get_client, get_organization, list_client_invoices, list_clients, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Prescription Guard
