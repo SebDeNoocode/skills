@@ -1,6 +1,12 @@
 ---
 name: qonto-money-calendar
 description: Two-way bridge between a Qonto account and Google Calendar. Direction 1 pushes every upcoming money date into the calendar — supplier invoices to pay, client invoices to collect, recurring charges detected from history (rent, subscriptions, tax direct debits) — with the amount in the event title and a D-3 reminder. Direction 2 reads billable days tagged [Client] in calendar event titles and drafts the end-of-month invoice (days × confirmed day rate) in Qonto. Use for "put my money dates in my calendar", "mets mes échéances dans mon agenda", "what's due this month?", "génère ma facture du mois depuis mon agenda", "invoice my tagged days for June".
+permissions:
+  mcp:
+    qonto: [create_client, create_client_invoice, create_quote, delete_client_invoice, get_organization, list_client_invoices, list_clients, list_products, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Money Calendar
