@@ -1,6 +1,12 @@
 ---
 name: qonto-asset-registry
 description: Fixed-asset register and insurance inventory built straight from a Qonto account. Scans 24–36 months of transactions and supplier invoices, recognizes equipment purchases (IT, furniture, machines, vehicles, tools, phones) from vendor names and invoice labels, applies the €500 pre-tax threshold (French practice, configurable), links each asset to its transaction receipt, computes indicative straight-line depreciation, and produces the insurance inventory nobody keeps up to date. 100% read-only. Use for "what equipment does my company own?", "build my asset register", "fais mon registre des immobilisations", "I need an inventory for my insurer", "how much is my hardware worth today?", "prépare l'inventaire assurance".
+permissions:
+  mcp:
+    qonto: [get_attachment, get_organization, list_supplier_invoices, list_transaction_attachments, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Asset Registry
