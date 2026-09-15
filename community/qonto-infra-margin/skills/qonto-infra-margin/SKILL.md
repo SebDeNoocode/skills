@@ -1,6 +1,12 @@
 ---
 name: qonto-infra-margin
 description: Infrastructure unit-economics radar for SaaS and tech founders on Qonto. Isolates real infra spend from the account's debits (Vercel, Supabase, Sentry, OpenAI, Anthropic, AWS, Scaleway, OVH…), cross-references product telemetry from connected MCPs (Vercel projects/deployments, Supabase usage) and computes true unit economics — €/user, €/project, month-by-month gross-margin drift, and the side-projects that bleed money without traffic. Use for "what does my infra cost per user?", "combien me coûte mon infra par utilisateur ?", "how much am I spending on AI APIs?", "which side-project is bleeding money?", "is my gross margin drifting?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Infra Margin
