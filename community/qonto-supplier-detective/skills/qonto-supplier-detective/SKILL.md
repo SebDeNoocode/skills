@@ -1,6 +1,12 @@
 ---
 name: qonto-supplier-detective
 description: Forensic audit of supplier invoices and payments on a Qonto account. Sweeps every supplier invoice and every debit to find money leaking out — duplicate invoices, invoices paid twice, invoice-vs-payment amount gaps, and the highest-value security signal, a known supplier whose payment IBAN suddenly changed (the number-one supplier wire-fraud pattern). 100% read-only; every finding ships with the exact references needed to claim the money back. Use for "lance l'audit fournisseurs", "did I pay anything twice?", "find duplicate supplier invoices", "est-ce qu'un fournisseur a changé d'IBAN ?", "how much can I recover from my supplier payments?".
+permissions:
+  mcp:
+    qonto: [change_supplier_invoice_status, get_organization, get_supplier_invoice, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Supplier Detective
