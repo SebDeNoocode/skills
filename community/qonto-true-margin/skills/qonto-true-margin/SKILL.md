@@ -1,6 +1,12 @@
 ---
 name: qonto-true-margin
 description: Real-cost pricing for e-commerce on Qonto. Rebuilds the true contribution margin per product from what actually left the bank account — PSP fees really debited, EUR/USD FX costs, real carrier invoices, supplier COGS — allocates them pro-rata (announced as a heuristic), flags products sold at a loss, and proposes corrected prices, applied in Shopify (update-product) only after explicit line-by-line validation. Use for "quelle est ma vraie marge par produit ?", "which products am I selling at a loss?", "my dashboard says 42% margin — is that real?", "reprice my catalog from my real bank costs", "combien me coûte vraiment ce produit, tout compris ?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto True Margin
