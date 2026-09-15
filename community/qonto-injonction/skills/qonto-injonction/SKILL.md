@@ -1,6 +1,12 @@
 ---
 name: qonto-injonction
-description: Court-ready payment-order file builder for Qonto accounts (France). When reminders have failed, turns an unpaid client invoice into a ready-to-file "injonction de payer" dossier — CERFA 12946 form pre-filled field by field for the commercial court, late-payment interest computed (ECB refi + 10 pts, floor 3× the French legal rate, art. L441-10) plus the €40 recovery indemnity, a numbered exhibit list built from Qonto receipts, the competent court identified from the debtor's registered office (public company-registry API, no key), and a prior BODACC check: debtor in collective proceedings → NO injunction, the skill reorients to a proof of claim (2-month deadline). Use for "prépare une injonction de payer", "ce client ne paiera jamais, on fait quoi ?", "take this invoice to court", "calcule les intérêts de retard sur cette facture", "mon débiteur est-il en liquidation ?", "prepare the court file for invoice X".
+description: "Court-ready payment-order file builder for Qonto accounts (France). When reminders have failed, turns an unpaid client invoice into a ready-to-file \"injonction de payer\" dossier — CERFA 12946 form pre-filled field by field for the commercial court, late-payment interest computed (ECB refi + 10 pts, floor 3× the French legal rate, art. L441-10) plus the €40 recovery indemnity, a numbered exhibit list built from Qonto receipts, the competent court identified from the debtor's registered office (public company-registry API, no key), and a prior BODACC check: debtor in collective proceedings → NO injunction, the skill reorients to a proof of claim (2-month deadline). Use for \"prépare une injonction de payer\", \"ce client ne paiera jamais, on fait quoi ?\", \"take this invoice to court\", \"calcule les intérêts de retard sur cette facture\", \"mon débiteur est-il en liquidation ?\", \"prepare the court file for invoice X\"."
+permissions:
+  mcp:
+    qonto: [get_attachment, get_client, get_client_invoice, get_organization, list_client_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Injonction
