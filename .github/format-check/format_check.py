@@ -89,8 +89,28 @@ FLAG_TAKES_VALUE = {"-r", "--requirement", "-c", "--constraint", "-i", "--index-
                     "--index", "--find-links", "-f", "--root", "--platform", "--implementation", "--abi"}
 PIP_PINNED = re.compile(r"^[A-Za-z0-9][\w.\-]*(?:\[[\w,.\-]+\])?==\d[\w.]*$")
 NPM_EXACT = re.compile(r"^\d+\.\d+\.\d+(?:[-+][\w.]+)?$")
-SPEC_TOKEN = re.compile(r"^[-@\w][\w./@:+~^<>=!,\[\]-]*$")
-LOCAL_SPEC = ("./", "../", "/", "~", "file:", "git+", "git:", "github:", "http://", "https://", "ssh://", "link:", "workspace:")
+SPEC_TOKEN = re.compile(r"^[-@\w.][\w./@:+~^<>=!,\[\]#%&?-]*$")
+LOCAL_SPEC = ("./", "../", "/", "~", "file:", "link:", "workspace:")            # inside the plugin: reviewed code
+REMOTE_SPEC = ("http://", "https://", "git+", "git:", "github:", "gitlab:", "bitbucket:", "ssh://", "hg+", "svn+", "bzr+")
+ARCHIVE_EXT = (".whl", ".tar.gz", ".tgz", ".zip", ".tar.bz2", ".tar.xz")
+SOURCE_FLAGS = ("-i", "--index-url", "--extra-index-url", "-f", "--find-links", "--trusted-host", "--registry")
+INCLUDE_FLAGS = ("-r", "--requirement", "-c", "--constraint")
+
+
+def split_flag(tok: str, flags: tuple[str, ...]) -> tuple[str, str] | None:
+    """`-rFILE`, `-r FILE` (value in the next token, returned as ""), `--requirement=FILE`: (flag, value) or None."""
+    for f in flags:
+        if tok == f:
+            return f, ""
+        if tok.startswith(f + "="):
+            return f, tok[len(f) + 1:]
+        if len(f) == 2 and tok.startswith(f) and len(tok) > 2:
+            return f, tok[2:]
+    return None
+
+
+def is_remote_spec(tok: str) -> bool:
+    return tok.startswith(REMOTE_SPEC) or tok.lower().endswith(ARCHIVE_EXT) or " @ " in tok
 NPX_YES = re.compile(r"\bnpx\s+(-y|--yes)\b")
 
 
@@ -526,6 +546,15 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
                     validated.add(target)
                     check_pinned_manifest(target, rep, as_requirements=True)
                 continue
+            if what == "source":
+                rep.add("fail", "pinned-deps", f"`{cmd} {pkg}` pulls packages from a place this check does not validate.",
+                        file=r, line=ln, fix="Install exact versions from the default registry only.")
+                continue
+            if what == "remote":
+                rep.add("fail", "pinned-deps", f"`{cmd}` installs `{pkg}` from a URL, repository or archive.", file=r, line=ln,
+                        fix="Only exact versions from the default registry are accepted (`pkg==1.2.3`, `pkg@1.2.3`); "
+                            "code that is not on the registry ships inside the plugin.")
+                continue
             rep.add("fail", "pinned-deps", f"`{cmd}` installs `{pkg}` without an exact version.", file=r, line=ln,
                     fix="Pin an exact version, for example `pip install requests==2.32.3`, `npm install left-pad@1.3.0`, "
                         "`npx prettier@3.3.3`.")
@@ -577,8 +606,9 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
 
 
 def unpinned_installs(line: str):
-    """Yield (command, package, "unpinned") for every package an install command on this line would fetch without an
-    exact version, and (command + flag, file, "include") for every `-r`/`-c` file it reads."""
+    """Yield (command, spec, kind) for what an install command on this line would fetch: kind is "unpinned" for a
+    package without an exact version, "include" for a `-r`/`-c` file, "source" for an index or find-links option,
+    "remote" for a URL, repository or archive spec (pip and npm both accept those, they are not reviewable)."""
     for verb_re, kind in INSTALLERS:
         for m in verb_re.finditer(line):
             rest = re.split(r"\s(?:&&|\|\||;|\||#|>|2>)\s", line[m.end():])[0]
@@ -592,18 +622,38 @@ def unpinned_installs(line: str):
                 if not t or not SPEC_TOKEN.match(t):
                     break                 # prose after the command, not a package
                 if t.startswith("-"):
-                    if t in ("-r", "--requirement", "-c", "--constraint") and i + 1 < len(toks):
-                        yield f"{m.group(0).strip()} {t}", toks[i + 1], "include"
-                        i += 2
-                        continue
-                    if t in FLAG_TAKES_VALUE and i + 1 < len(toks):
-                        if t in ("-p", "--package", "--from", "--with"):   # the value is a package
-                            packages.append(toks[i + 1])
-                            if kind in ("npx", "uvx"):
-                                kind = "cmd-follows"   # the command that follows is not a package any more
-                        i += 2
-                        continue
-                    i += 1
+                    inc = split_flag(t, INCLUDE_FLAGS)
+                    src = split_flag(t, SOURCE_FLAGS)
+                    for hit, what in ((inc, "include"), (src, "source")):
+                        if hit is None:
+                            continue
+                        flag, value = hit
+                        if value:
+                            yield f"{m.group(0).strip()} {flag}", value, what
+                            i += 1
+                        elif i + 1 < len(toks):
+                            yield f"{m.group(0).strip()} {flag}", toks[i + 1], what
+                            i += 2
+                        else:
+                            i += 1
+                        break
+                    else:
+                        if t in ("-e", "--editable") and i + 1 < len(toks):
+                            packages.append(toks[i + 1])       # a path or a URL, checked like any other spec
+                            i += 2
+                            continue
+                        if t in FLAG_TAKES_VALUE and i + 1 < len(toks):
+                            if t in ("-p", "--package", "--from", "--with"):   # the value is a package
+                                packages.append(toks[i + 1])
+                                if kind in ("npx", "uvx"):
+                                    kind = "cmd-follows"   # the command that follows is not a package any more
+                            i += 2
+                            continue
+                        i += 1
+                    continue
+                if t == "@" and packages and i + 1 < len(toks):   # PEP 508 direct reference: `pkg @ url`
+                    packages[-1] = f"{packages[-1]} @ {toks[i + 1]}"
+                    i += 2
                     continue
                 if kind in ("npx", "uvx"):
                     packages.append(t)          # the first bare token is the package, the rest are its arguments
@@ -613,7 +663,10 @@ def unpinned_installs(line: str):
                 packages.append(t)
                 i += 1
             for pkg in packages:
-                if pkg.startswith(LOCAL_SPEC) or pkg.endswith((".whl", ".tar.gz", ".tgz", ".zip")) or pkg in (".", "-"):
+                if is_remote_spec(pkg):
+                    yield m.group(0).strip(), pkg, "remote"
+                    continue
+                if pkg.startswith(LOCAL_SPEC) or pkg in (".", "-"):
                     continue
                 if kind0 == "pip" or (kind0 == "uvx" and "==" in pkg):
                     if not PIP_PINNED.match(pkg):
@@ -639,7 +692,15 @@ def check_pinned_manifest(p: Path, rep: Report, as_requirements: bool = False):
                 continue
             if s.startswith("-"):
                 continue   # a plain pip option such as --pre
-            if "==" not in s.split(";")[0]:
+            req = s.split(";")[0].strip()
+            spec = req.split("--hash")[0].strip()
+            if is_remote_spec(spec) or spec.startswith(LOCAL_SPEC) or spec.startswith("."):
+                if "--hash=" not in req:
+                    rep.add("fail", "pinned-deps", f"`{spec}` is a direct reference (URL, repository, archive or path) "
+                            "without `--hash`, so what it installs can change after review.", file=r, line=ln,
+                            fix="Use `package==1.2.3` from the index, or add `--hash=sha256:...` to the line.")
+                continue
+            if not PIP_PINNED.match(spec):
                 rep.add("fail", "pinned-deps", f"`{s}` is not pinned to an exact version.", file=r, line=ln,
                         fix="Use `package==1.2.3`.")
     elif p.name == "package.json":
@@ -655,6 +716,10 @@ def check_pinned_manifest(p: Path, rep: Report, as_requirements: bool = False):
                             fix="Use exact versions such as `1.2.3`, no `^`, `~`, ranges, tags or URLs.")
     elif p.name == "pyproject.toml":
         for ln, line in enumerate(text.splitlines(), 1):
+            if re.search(r'^\s*"[^"]*\s@\s[^"]*"', line) or re.search(r"\b(?:git|url)\s*=\s*\"", line):
+                rep.add("fail", "pinned-deps", f"`{line.strip()}` is a direct reference, not a pinned index version.",
+                        file=r, line=ln, fix="Use `package==1.2.3`.")
+                continue
             m = re.match(r'^\s*"([A-Za-z0-9_.\-\[\]]+)\s*([<>=!~]{1,2})?', line)
             if m and m.group(2) and m.group(2) != "==":
                 rep.add("fail", "pinned-deps", f"`{line.strip()}` is not pinned with `==`.", file=r, line=ln)
