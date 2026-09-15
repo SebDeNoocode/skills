@@ -1,6 +1,12 @@
 ---
 name: qonto-brand-shield
 description: Brand protection radar for Qonto accounts. Detects brand-building spend in real transactions (designers & logo work, domain names, advertising, packaging, print), totals it per brand ("you invested €X in brand [Name]"), then cross-checks intellectual property — is the brand registered at INPI, by you, do close marks exist in your suggested Nice classes, is the 10-year renewal near? Outputs the financial exposure (unprotected investment) and a pre-filing dossier ready for inpi.fr. Use for "is my brand protected?", "ma marque est-elle déposée ?", "combien j'ai investi dans ma marque ?", "how much did I spend building my brand?", "should I file a trademark?", "prépare mon dossier INPI".
+permissions:
+  mcp:
+    qonto: [get_attachment, get_organization, list_cash_flow_categories, list_products, list_supplier_invoices, list_transaction_attachments, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Brand Shield
