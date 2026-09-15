@@ -101,7 +101,7 @@ explicit boundaries.
 Run the behavioral evals with:
 
 ```bash
-cd evals && npx promptfoo eval
+cd evals && npx promptfoo@0.123.0 eval
 ```
 
 ## Scope
