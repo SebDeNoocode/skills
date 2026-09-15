@@ -1,6 +1,12 @@
 ---
 name: qonto-rebill
 description: Recovers billable expenses from a Qonto account. Finds client-attributable transactions (client-named Qonto labels, teams, or history-assisted interactive attribution), groups them by client and period, inventories the receipts already attached to each transaction, explains the French "disbursement vs rebilled expense" VAT choice without ever deciding alone, and drafts the rebill invoice line by line (create_client_invoice as DRAFT, sent only after explicit confirmation), with an optional 5-10% handling fee. Use for "refacture mes frais à mes clients", "which expenses did I advance for client X this quarter?", "rebill my project expenses", "did I forget billable expenses?", "invoice my travel and hosting costs back".
+permissions:
+  mcp:
+    qonto: [create_client_invoice, create_quote, delete_client_invoice, get_attachment, get_organization, list_cash_flow_categories, list_clients, list_labels, list_transaction_attachments, list_transactions, send_client_invoice]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Rebill
