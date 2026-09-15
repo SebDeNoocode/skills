@@ -1,6 +1,12 @@
 ---
 name: qonto-meeting-invoice
 description: Turns a sales-call transcript into a Qonto quote or invoice. Extracts the negotiated terms (deliverables, quantities, prices, payment terms), matches them against the Qonto product catalog and client records, creates the document as a DRAFT, and sends it only after explicit line-by-line confirmation. Use for "turn this call into a quote", "fais le devis du call de ce matin", "draft an invoice from this meeting transcript", "voici le transcript, prépare le devis", "the client said yes — send the quote".
+permissions:
+  mcp:
+    qonto: [create_client, create_client_invoice, create_payment_link, create_quote, delete_client_invoice, delete_quote, get_client, get_organization, list_clients, list_products, list_quotes, send_client_invoice, send_quote]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Meeting Invoice
