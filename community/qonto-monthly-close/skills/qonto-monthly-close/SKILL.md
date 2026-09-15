@@ -1,6 +1,12 @@
 ---
 name: qonto-monthly-close
 description: Month-end closing review for Qonto accounts, read-only. One prompt triggers a full review of the past month — missing receipts prioritized by stakes, the month's VAT (collected/deductible, cash-basis aware), anomalies (unusual spend, duplicate direct debit, new beneficiary), unlabeled transactions, unpaid client invoices, month-over-month comparison — and produces an actionable closing report with a prioritized fix-it list. Use for "close my month", "clôture mon mois", "month-end review", "get my books ready for my accountant", "anything unusual on my account last month?", "how did June compare to May?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_client_invoices, list_labels, list_supplier_invoices, list_transaction_attachments, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Monthly Close
