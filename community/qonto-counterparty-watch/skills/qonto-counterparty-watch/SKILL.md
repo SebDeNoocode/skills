@@ -1,6 +1,12 @@
 ---
 name: qonto-counterparty-watch
-description: Legal-health radar for the clients and suppliers of a Qonto account. Ranks every counterparty by real exposure (unpaid client invoices, supplier commitments, recurring spend), measures actual payment delays against due dates, and — when a Datagouv MCP is available — cross-checks French public registries (SIRENE deregistrations/cessations, BODACC collective procedures: receivership, liquidation, safeguard) to raise alerts like "client X owes you N € AND just entered receivership — chase today". Use for "who owes me money and are they in trouble?", "check my clients' legal health", "mon client est-il en redressement ?", "which supplier could fail me?", "rank my counterparties by risk".
+description: "Legal-health radar for the clients and suppliers of a Qonto account. Ranks every counterparty by real exposure (unpaid client invoices, supplier commitments, recurring spend), measures actual payment delays against due dates, and — when a Datagouv MCP is available — cross-checks French public registries (SIRENE deregistrations/cessations, BODACC collective procedures: receivership, liquidation, safeguard) to raise alerts like \"client X owes you N € AND just entered receivership — chase today\". Use for \"who owes me money and are they in trouble?\", \"check my clients' legal health\", \"mon client est-il en redressement ?\", \"which supplier could fail me?\", \"rank my counterparties by risk\"."
+permissions:
+  mcp:
+    qonto: [get_client, get_organization, list_cash_flow_categories, list_client_invoices, list_clients, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Counterparty Watch
