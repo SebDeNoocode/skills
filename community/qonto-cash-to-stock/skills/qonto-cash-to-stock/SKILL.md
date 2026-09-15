@@ -1,6 +1,12 @@
 ---
 name: qonto-cash-to-stock
 description: Cash-constrained restocking copilot for e-commerce on Qonto. The real ceiling on a restock isn't demand — it's cash. Computes the truly available cash (all account balances minus upcoming supplier invoices, detected tax deadlines and recurring fixed costs), the sales velocity and stock cover (Shopify when connected, estimated from receipts otherwise), then answers THE question — how many units can I order without endangering the account, and by when? With explicit user consent it prepares the supplier transfer request, approved with 2FA in the Qonto app. Use for "combien d'unités puis-je commander sans me mettre en danger ?", "when will I run out of stock?", "can my cash fund this restock?", "quand dois-je passer ma commande fournisseur ?", "prepare the supplier payment".
+permissions:
+  mcp:
+    qonto: [create_multi_transfer_request, decline_request, get_organization, list_products, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Cash-to-Stock
