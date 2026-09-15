@@ -1,6 +1,12 @@
 ---
 name: qonto-vat-return
 description: French VAT return (CA3, form 3310-CA3) preparer for Qonto accounts. Builds the declaration box by box from real account data — collected VAT per rate (20/10/5.5/2.1%), deductible VAT (goods & services, fixed assets), net VAT payable or credit to carry forward — as a "form box → amount → justification" table ready to copy into impots.gouv.fr, with consistency checks against past months and past DGFIP payments. Read-only, zero writes. Use for "prépare ma CA3", "prepare my VAT return for June", "combien de TVA je dois déclarer ce mois-ci ?", "fill in my 3310-CA3", "TVA collectée vs déductible", "check my VAT before I file".
+permissions:
+  mcp:
+    qonto: [get_organization, get_statement, list_cash_flow_categories, list_client_invoices, list_statements, list_supplier_invoices, list_transaction_attachments, list_transactions, mark_client_invoice_as_paid]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto VAT Return
