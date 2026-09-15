@@ -1,6 +1,12 @@
 {
-  "count": 56,
+  "count": 65,
   "tools": [
+    {
+      "name": "approve_request",
+      "title": "Approve request",
+      "read_only": false,
+      "destructive": false
+    },
     {
       "name": "change_card_status",
       "title": "Change card status",
@@ -28,6 +34,12 @@
     {
       "name": "create_card_request",
       "title": "Create card request",
+      "read_only": false,
+      "destructive": false
+    },
+    {
+      "name": "create_cash_flow_category",
+      "title": "Create cash flow category",
       "read_only": false,
       "destructive": false
     },
@@ -110,6 +122,24 @@
       "destructive": false
     },
     {
+      "name": "export_statements",
+      "title": "Download account statements as a zip",
+      "read_only": true,
+      "destructive": false
+    },
+    {
+      "name": "export_transaction_attachments",
+      "title": "Download transaction attachments as a zip",
+      "read_only": true,
+      "destructive": false
+    },
+    {
+      "name": "export_transactions",
+      "title": "Export transactions to CSV",
+      "read_only": true,
+      "destructive": false
+    },
+    {
       "name": "get_attachment",
       "title": "Get attachment",
       "read_only": true,
@@ -142,6 +172,18 @@
     {
       "name": "get_organization",
       "title": "Get organization",
+      "read_only": true,
+      "destructive": false
+    },
+    {
+      "name": "get_payment_link",
+      "title": "Get payment link",
+      "read_only": true,
+      "destructive": false
+    },
+    {
+      "name": "get_qonto_public_pricing",
+      "title": "Get Qonto public pricing reference",
       "read_only": true,
       "destructive": false
     },
@@ -302,6 +344,12 @@
       "destructive": false
     },
     {
+      "name": "request_attachment_upload",
+      "title": "Request an attachment upload URL",
+      "read_only": false,
+      "destructive": false
+    },
+    {
       "name": "send_client_invoice",
       "title": "Send client invoice",
       "read_only": false,
@@ -334,6 +382,12 @@
     {
       "name": "update_quote",
       "title": "Update quote",
+      "read_only": false,
+      "destructive": false
+    },
+    {
+      "name": "upload_attachment",
+      "title": "Upload a staged attachment to Qonto",
       "read_only": false,
       "destructive": false
     }
