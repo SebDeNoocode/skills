@@ -18,6 +18,12 @@ allowed-tools: >-
   mcp__qonto__mark_client_invoice_as_paid mcp__qonto__create_quote
   mcp__qonto__create_payment_link mcp__qonto__get_payment_link
   mcp__qonto__list_payment_links mcp__qonto__list_transactions Bash Read
+permissions:
+  mcp:
+    qonto: [change_client_invoice_status, create_client, create_client_invoice, create_payment_link, create_quote, get_client, get_client_invoice, get_organization, get_payment_link, list_client_invoices, list_clients, list_payment_links, list_transactions, mark_client_invoice_as_paid, send_client_invoice, update_client, update_client_invoice]
+  network: [recherche-entreprises.api.gouv.fr]
+  env: []
+  tools: [Read, Bash]
 ---
 
 # Veto
