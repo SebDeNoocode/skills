@@ -1,6 +1,12 @@
 ---
 name: qonto-fraud-sentinel
 description: Morning bodyguard for Qonto accounts. Screens the latest transactions against a numbered baseline built from 3–6 months of history and flags what's unusual — never-seen beneficiary, amount 3×+ the counterparty's average, duplicate direct debit, odd hour or channel, bursts of small card debits (stolen-card testing pattern), first SEPA direct debit from a new creditor. Every alert shows the transaction, why it's unusual (with numbers), and the recommended action; a card lock (change_card_status) is proposed — never executed automatically. Use for "run my morning check", "anything unusual on my account?", "un truc bizarre sur mon compte ?", "did I get charged twice?", "is this €249 debit normal?", "watch my account".
+permissions:
+  mcp:
+    qonto: [change_card_status, get_organization, list_cards, list_cash_flow_categories, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Fraud Sentinel
