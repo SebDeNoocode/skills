@@ -1,6 +1,12 @@
 ---
 name: qonto-shopify-bridge
 description: E-commerce payout reconciliation for Qonto accounts. Matches Shopify/Stripe/PayPal payouts against the money that actually lands on the Qonto account — missing or late payouts, effective fee rate vs announced, refunds and chargebacks not passed through, and the true net margin per period. Works Qonto-only; enriches with the Shopify (or Stripe) MCP when connected. Use for "did Shopify actually pay me?", "où sont passés mes payouts Shopify ?", "what do Stripe fees really cost me?", "reconcile my store sales with my bank account", "is a payout missing this week?".
+permissions:
+  mcp:
+    qonto: [get_organization, get_statement, list_cash_flow_categories, list_statements, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Shopify Bridge
