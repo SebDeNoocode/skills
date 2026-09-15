@@ -1,6 +1,12 @@
 ---
 name: qonto-oss-navigator
 description: EU e-commerce VAT navigator (OSS One-Stop Shop) for Qonto accounts. Tracks the single €10,000 EU threshold for cross-border B2C distance sales, breaks sales down by customer country (Shopify shipping countries when connected, otherwise partial inference from Qonto data — announced as such), applies a vintage-dated VAT rate table for all 27 member states, drafts the quarterly OSS return country by country (base, rate, VAT due), and — with explicit consent — provisions the amount via a transfer request the user approves with SCA. Use for "am I over the EU distance-selling threshold?", "où j'en suis sur le seuil des 10 000 € ?", "prepare my OSS return for the quarter", "quelle TVA appliquer à mes clients allemands ?", "what VAT rate for my Spanish customers?", "provisionne ma TVA OSS".
+permissions:
+  mcp:
+    qonto: [create_multi_transfer_request, decline_request, get_organization, list_cash_flow_categories, list_client_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto OSS Navigator
