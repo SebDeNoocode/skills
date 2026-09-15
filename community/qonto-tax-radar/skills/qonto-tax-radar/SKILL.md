@@ -1,6 +1,12 @@
 ---
 name: qonto-tax-radar
 description: French tax pre-audit ("pré-contrôle fiscal") for Qonto accounts, 100% read-only. Screens transactions against the 8 verification axes real DGFIP auditors use — lavish expenses, personal spending booked as business, director's current account, VAT deducted vs receipts on file, benefits in kind, duplicate charges, cash, recurring round amounts — and returns a risk report (🟢🟡🔴 per axis, amounts at stake, cited tax rules, fixes to make first). Use for "lance mon pré-contrôle fiscal", "am I ready for a tax audit?", "quels risques fiscaux dans mes comptes ?", "audit my expenses like a tax inspector would", "what would the tax office flag?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_labels, list_supplier_invoices, list_transaction_attachments, list_transactions, request_attachment_upload]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Tax Radar
