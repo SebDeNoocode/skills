@@ -1,6 +1,12 @@
 ---
 name: qonto-accountant-handoff
 description: Monthly (or quarterly) accountant handoff pack built from a Qonto account. Gathers the period's bank statements, a receipt completeness report with the precise list of what's missing, factually annotated transactions (labels, VAT, anomaly notes), client and supplier invoices, and a drafted handoff letter — then files everything into a YYYY/MM Google Drive tree and drafts a recap email to the accounting firm when those MCPs are present (structured local pack otherwise). Use for "prépare le pack comptable de juin", "mon comptable me demande les pièces de mars", "prepare the handoff pack for my accountant", "what's missing before I send the month to my accountant?".
+permissions:
+  mcp:
+    qonto: [get_organization, get_statement, list_cash_flow_categories, list_client_invoices, list_statements, list_supplier_invoices, list_transaction_attachments, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Accountant Handoff
