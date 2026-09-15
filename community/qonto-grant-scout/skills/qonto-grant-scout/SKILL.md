@@ -1,6 +1,12 @@
 ---
 name: qonto-grant-scout
 description: Public-funding scout for Qonto accounts. Builds the company's real profile from the account — sector, location, size, actual spending structure (training, equipment, digital, hiring, export, energy) — then cross-references it with French public aid referentials on data.gouv.fr (via the Datagouv MCP when present) to shortlist plausible grants and subsidies. Every lead carries eligibility criteria to confirm, a dated source, and a concrete next step; the skill never claims eligibility. Use for "quelles aides publiques pour ma boîte ?", "je dépense beaucoup en formation, il existe des aides ?", "what grants could my company target?", "am I leaving public money on the table?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_labels, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Grant Scout
