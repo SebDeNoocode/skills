@@ -1,6 +1,12 @@
 ---
 name: qonto-ceo-cockpit
 description: One-prompt CEO cockpit for Qonto accounts. Builds a self-contained interactive HTML dashboard of the whole company — where money comes from and where it goes (month + year flow view), month/year/forecast cards, a 3-month projection from recurring flows and open invoices, a live day-rate × billable-days hypothesis panel that recalculates without any new API call, and an eye toggle to hide sensitive lines when presenting. Use for "montre-moi ma boîte", "show me my company", "where does my money go?", "build my CEO dashboard", "prepare the view for my banker meeting", "what if I raise my day rate by €50?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_client_invoices, list_labels, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto CEO Cockpit
