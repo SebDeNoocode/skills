@@ -72,10 +72,23 @@ SKILL_MD_FAIL_LINES = 1000
 PROTECTED_PREFIXES = (".github/", ".claude-plugin/", ".codex-plugin/", ".agents/", "featured/")
 PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS", "DCO"}
 
-UNPINNED_PIP = re.compile(r"\bpip3?\s+install\s+(?!-r\b|--requirement\b|-e\b|\.)([^\s;&|]+)")
-UNPINNED_NPX = re.compile(r"\bnpx\s+(?:(-y|--yes)\s+)?(?!-)([@\w./-]+)")
-UNPINNED_NPM = re.compile(r"\bnpm\s+(?:i|install|add)\s+(?!-)(?:-g\s+|--global\s+)?([@\w./-]+)")
-UNPINNED_UVX = re.compile(r"\buvx\s+(?:--from\s+)?(?!-)([@\w./-]+)")
+# Install commands are tokenised rather than regex-matched so flags (`npm i -D x`, `pip install -U x`) cannot hide
+# the package, several packages on one line are all checked, and `pkg@latest` counts as unpinned.
+INSTALLERS = (
+    (re.compile(r"\bpip3?\s+install\b"), "pip"),
+    (re.compile(r"\buv\s+pip\s+install\b"), "pip"),
+    (re.compile(r"\b(?:npm|pnpm)\s+(?:i|install|add)\b"), "npm"),
+    (re.compile(r"\byarn\s+add\b"), "npm"),
+    (re.compile(r"\bnpx\b"), "npx"),
+    (re.compile(r"\buvx\b"), "uvx"),
+)
+FLAG_TAKES_VALUE = {"-r", "--requirement", "-c", "--constraint", "-i", "--index-url", "--extra-index-url", "-t",
+                    "--target", "--prefix", "--python", "-p", "--package", "--from", "--with", "--filter", "--registry",
+                    "--index", "--find-links", "-f", "--root", "--platform", "--implementation", "--abi"}
+PIP_PINNED = re.compile(r"^[A-Za-z0-9][\w.\-]*(?:\[[\w,.\-]+\])?==\d[\w.]*$")
+NPM_EXACT = re.compile(r"^\d+\.\d+\.\d+(?:[-+][\w.]+)?$")
+SPEC_TOKEN = re.compile(r"^[-@\w][\w./@:+~^<>=!,\[\]-]*$")
+LOCAL_SPEC = ("./", "../", "/", "~", "file:", "git+", "git:", "github:", "http://", "https://", "ssh://", "link:", "workspace:")
 NPX_YES = re.compile(r"\bnpx\s+(-y|--yes)\b")
 
 
@@ -425,31 +438,56 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
     return fm, declared, hosts
 
 
+DENY_KEYS = ("disallowedTools", "disallowed-tools", "disallowed_tools", "deny", "denied", "blocked")
+DENY_LINE_RE = re.compile(r"^\s*(?:" + "|".join(DENY_KEYS) + r")\s*:")
+
+
+def blank_deny_lists(text: str, r: str, rep: Report) -> str:
+    """Return the text with frontmatter deny lists blanked out (line numbers kept): a tool an agent is forbidden to call
+    is not a call site, so it needs no `permissions` entry. Unknown names in a deny list only get a warning."""
+    fm, _, _ = parse_frontmatter(text)
+    if fm is None:
+        return text
+    lines = text.splitlines()
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), 0)
+    i = 1
+    while i < end:
+        if DENY_LINE_RE.match(lines[i]):
+            block = [i]
+            j = i + 1
+            while j < end and (lines[j].startswith((" ", "\t")) or not lines[j].strip()):
+                block.append(j); j += 1
+            joined = "\n".join(lines[k] for k in block)
+            for mm in QUALIFIED_TOOL_RE.finditer(joined):
+                t = mm.group(1) or mm.group(2)
+                if t not in KNOWN_TOOLS:
+                    rep.add("warn", "tool-name", f"Deny list names `{mm.group(0)}`, which is not a Qonto MCP tool, so the entry "
+                            f"does nothing.{suggest(t)}", file=r, line=i + 1)
+            for k in block:
+                lines[k] = ""
+            i = j
+        else:
+            i += 1
+    return "\n".join(lines)
+
+
 def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
                    reported: set[str] | None = None, perms_present: bool = True):
     reported = set() if reported is None else reported
     r = rel(p)
     text = read_text(p)
     ext = p.suffix.lower()
+    if ext == ".md":
+        text = blank_deny_lists(text, r, rep)
     # 1. pinned dependencies
     for ln, line in enumerate(text.splitlines(), 1):
         if NPX_YES.search(line):
             rep.add("fail", "pinned-deps", "`npx --yes` installs and runs a package without asking.", file=r, line=ln,
                     fix="Pin the version (`npx pkg@1.2.3`) and drop `--yes`.")
-        for rx, what in ((UNPINNED_PIP, "pip"), (UNPINNED_NPM, "npm"), (UNPINNED_UVX, "uvx")):
-            for m in rx.finditer(line):
-                pkg = m.group(m.lastindex)
-                if what == "pip" and "==" in pkg:
-                    continue
-                if what in ("npm", "uvx") and ("@" in pkg.lstrip("@") or "==" in pkg):
-                    continue
-                rep.add("fail", "pinned-deps", f"`{m.group(0).strip()}` installs an unpinned package.", file=r, line=ln,
-                        fix="Pin an exact version, for example `pip install requests==2.32.3`.")
-        for m in UNPINNED_NPX.finditer(line):
-            pkg = m.group(2)
-            if "@" not in pkg.lstrip("@") and not pkg.startswith(("./", "../")):
-                rep.add("fail", "pinned-deps", f"`{m.group(0).strip()}` runs an unpinned package.", file=r, line=ln,
-                        fix="Pin it: `npx pkg@1.2.3`.")
+        for cmd, pkg in unpinned_installs(line):
+            rep.add("fail", "pinned-deps", f"`{cmd}` installs `{pkg}` without an exact version.", file=r, line=ln,
+                    fix="Pin an exact version, for example `pip install requests==2.32.3`, `npm install left-pad@1.3.0`, "
+                        "`npx prettier@3.3.3`.")
     # 2. tool references
     seen: set[str] = set()
     for ln, line in enumerate(text.splitlines(), 1):
@@ -495,6 +533,49 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
                 rep.add("fail", "permissions", f"`.mcp.json` server `{sname}` connects to `{host}`, which `permissions.network` does not declare.",
                         file=r, fix="Add the host to `permissions.network`.")
             rep.add("note", "permissions", f"Bundles an MCP server config `{sname}`.", file=r)
+
+
+def unpinned_installs(line: str):
+    """Yield (command, package) for every package an install command on this line would fetch without an exact version."""
+    for verb_re, kind in INSTALLERS:
+        for m in verb_re.finditer(line):
+            rest = re.split(r"\s(?:&&|\|\||;|\||#|>|2>)\s", line[m.end():])[0]
+            rest = rest.split("`")[0]     # an inline code span ends the command in Markdown prose
+            toks = rest.replace("'", " ").replace('"', " ").split()
+            packages: list[str] = []
+            kind0 = kind
+            i = 0
+            while i < len(toks):
+                t = toks[i].rstrip(".,;:)")
+                if not t or not SPEC_TOKEN.match(t):
+                    break                 # prose after the command, not a package
+                if t.startswith("-"):
+                    if t in FLAG_TAKES_VALUE and i + 1 < len(toks):
+                        if t in ("-p", "--package", "--from", "--with"):   # the value is a package
+                            packages.append(toks[i + 1])
+                            if kind in ("npx", "uvx"):
+                                kind = "cmd-follows"   # the command that follows is not a package any more
+                        i += 2
+                        continue
+                    i += 1
+                    continue
+                if kind in ("npx", "uvx"):
+                    packages.append(t)          # the first bare token is the package, the rest are its arguments
+                    break
+                if kind == "cmd-follows":
+                    break
+                packages.append(t)
+                i += 1
+            for pkg in packages:
+                if pkg.startswith(LOCAL_SPEC) or pkg.endswith((".whl", ".tar.gz", ".tgz", ".zip")) or pkg in (".", "-"):
+                    continue
+                if kind0 == "pip" or (kind0 == "uvx" and "==" in pkg):
+                    if not PIP_PINNED.match(pkg):
+                        yield m.group(0).strip(), pkg
+                    continue
+                name, sep, ver = (pkg[1:].partition("@") if pkg.startswith("@") else pkg.partition("@"))
+                if not sep or not NPM_EXACT.match(ver):
+                    yield m.group(0).strip(), pkg
 
 
 def check_pinned_manifest(p: Path, rep: Report):
