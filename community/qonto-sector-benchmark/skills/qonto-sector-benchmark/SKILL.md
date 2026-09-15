@@ -1,6 +1,12 @@
 ---
 name: qonto-sector-benchmark
 description: Sector health check-up for Qonto accounts. Computes the company's real ratios from transactions and invoices (fixed-cost share, software subscription weight, observed client payment delay, revenue seasonality, cash in days of expenses) and compares them against official French sector statistics (INSEE, via the Datagouv MCP when connected) — every figure carrying its source, vintage and NAF granularity. Falls back to a "you vs you a year ago" self-benchmark when sector data is unavailable. Use for "suis-je normal ?", "am I normal?", "how do I compare to my industry?", "do my clients pay me slower than average?", "am I paying too much for software?", "benchmark my company against my sector".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_client_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Sector Benchmark
