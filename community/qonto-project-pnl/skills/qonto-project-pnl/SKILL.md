@@ -1,6 +1,12 @@
 ---
 name: qonto-project-pnl
 description: Per-project P&L that lives in Notion. Maps Qonto labels to projects, computes each project's real cashed revenue (paid client invoices matched to bank transactions), attributed costs, margin and monthly burn, flags overdue invoices and unusual costs, then — with explicit consent — creates or updates a dedicated "Finance" database in Notion, one entry per project, refreshed on every run. Use for "is project X actually profitable?", "quelle est la marge réelle du projet X ?", "update my Finance database in Notion", "which project is losing money?", "what's my burn per project?".
+permissions:
+  mcp:
+    qonto: [get_organization, get_subscription, list_cash_flow_categories, list_client_invoices, list_labels, list_quotes, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Project P&L
