@@ -1,6 +1,12 @@
 ---
 name: qonto-rgpd-register
 description: GDPR Article 30 register drafted from a Qonto account's spending. Detects the SaaS tools that process personal data (CRM, email marketing, analytics, AI, cloud, payroll, support) in the debits, classifies them by processing activity (purpose, typical data categories, EU / non-EU vendor location) and generates a draft record of processing activities in the CNIL card format — one card per activity, processor list, and flags (non-EU transfer → SCCs to verify, DPA to locate or sign, tool gone from the debits for 6 months → retire it?). Use for "génère mon registre RGPD", "quels outils traitent des données personnelles ?", "draft my Article 30 register", "which of my tools send data outside the EU?", "do I have DPAs to sign?".
+permissions:
+  mcp:
+    qonto: [get_organization, list_cash_flow_categories, list_memberships, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto RGPD Register
