@@ -1,6 +1,12 @@
 ---
 name: qonto-approval-brief
 description: Approval copilot for pending team requests in Qonto. Reads every pending transfer, multi-transfer and card request, then instructs each one like a CFO would — beneficiary payment history (paid N times before? usual amounts?), IBAN seen-before or never-seen signal, amount vs habit, budget/label coherence, optional email context — and delivers one evidence-cited decision brief per request (✅ recommended / 🔶 verify). Declines with a stated reason after explicit confirmation; approvals always stay in the Qonto app behind the owner's own SCA — the skill cannot approve, by design. Use for "brief me on my pending requests", "should I approve this transfer request?", "which requests are safe to approve?", "instruis mes demandes en attente", "je peux approuver cette demande de virement ?".
+permissions:
+  mcp:
+    qonto: [approve_request, decline_request, get_organization, list_labels, list_memberships, list_requests, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Approval Brief
