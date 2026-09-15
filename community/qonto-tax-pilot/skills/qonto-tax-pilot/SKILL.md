@@ -1,6 +1,12 @@
 ---
 name: qonto-tax-pilot
 description: French tax radar and cash pilot for Qonto accounts. Builds a dated, amount-estimated tax schedule (VAT, corporate tax instalments, CFE, dividend flat tax), projects the next 90 days of cash, computes the month's tax provision, and — with explicit user consent — creates a transfer request to a dedicated tax sub-account that the user approves with 2FA in the Qonto app. Use for "où en sera ma tréso fin septembre ?", "quand tombe ma TVA et combien ?", "provisionne mes impôts", "can I afford this purchase?", "what if my client pays late?".
+permissions:
+  mcp:
+    qonto: [create_multi_transfer_request, decline_request, get_organization, get_subscription, list_cash_flow_categories, list_client_invoices, list_supplier_invoices, list_transactions]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Tax Pilot
