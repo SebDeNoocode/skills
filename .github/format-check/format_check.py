@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import importlib.util
 import json
 import os
 import re
@@ -35,6 +36,7 @@ WRITE_TOOLS = {n for n, t in KNOWN_TOOLS.items() if not t["read_only"]}
 DESTRUCTIVE_TOOLS = {n for n, t in KNOWN_TOOLS.items() if t["destructive"]}
 
 PLUGIN_ROOTS = ("featured", "community")   # featured/ is Qonto's, community/ takes contributions
+BASE = ""                                  # set from --base: lets checks compare with what main already has
 CONTRIB_ROOT = "community"
 SKILLS_DIR = "skills"                      # inside a plugin: <plugin>/skills/<skill>/SKILL.md
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][\w.]+)?$")
@@ -124,7 +126,9 @@ def git(*args: str) -> str:
 def changed_files(base: str, head: str) -> list[str]:
     # three-dot: only what the branch adds since it forked from base. In CI head is the merge commit, so
     # this equals the plain diff; locally it keeps base's own newer commits out of the picture.
-    out = git("diff", "--name-only", "--diff-filter=ACMR", f"{base}...{head}")
+    # --no-renames so a rename shows as delete + add, and D/T so a deletion or a file turned into a symlink
+    # cannot slip past the protected-path rule.
+    out = git("diff", "--name-only", "--no-renames", "--diff-filter=ACDMTUXB", f"{base}...{head}")
     return sorted(p for p in out.splitlines() if p.strip())
 
 
@@ -164,6 +168,12 @@ def maintainers() -> set[str]:
         return set()
     return {l.strip().lstrip("@").lower() for l in p.read_text().splitlines()
             if l.strip() and not l.startswith("#")}
+
+
+def semver_key(v: str) -> tuple:
+    core, _, tail = v.partition("-")
+    core = core.split("+")[0]
+    return tuple(int(x) for x in core.split(".")), tail == "", tail
 
 
 def suggest(name: str) -> str:
@@ -321,6 +331,16 @@ def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
     if not isinstance(m.get("version"), str) or not SEMVER_RE.match(m["version"]):
         rep.add("fail", "layout", f"Manifest `version` `{m.get('version')}` is not a semantic version.", file=r,
                 fix="Use `MAJOR.MINOR.PATCH`, for example `0.1.0`.")
+    elif BASE:
+        try:
+            old = json.loads(git("show", f"{BASE}:{r}"))
+        except (subprocess.CalledProcessError, json.JSONDecodeError):
+            old = None   # new plugin, or no manifest on base
+        if isinstance(old, dict) and isinstance(old.get("version"), str) and SEMVER_RE.match(old["version"]) \
+                and semver_key(m["version"]) <= semver_key(old["version"]):
+            rep.add("fail", "layout", f"Manifest `version` is still `{m['version']}` although the plugin changed.", file=r,
+                    fix="Bump it, for example `0.1.0` -> `0.1.1`. The marketplace republishes this version and agents "
+                        "skip an update whose version they already have.")
     if not isinstance(m.get("author"), dict) or not m["author"].get("name"):
         rep.add("warn", "layout", "Manifest has no `author.name`.", file=r, fix='Add `"author": { "name": "...", "url": "..." }`.')
     if m.get("license") not in (None, "MIT"):
@@ -471,8 +491,20 @@ def blank_deny_lists(text: str, r: str, rep: Report) -> str:
     return "\n".join(lines)
 
 
+def resolve_include(p: Path, pdir: Path, name: str) -> Path | None:
+    """`-r name` in an install command: the file it points at, if it lives inside the plugin."""
+    for cand in (p.parent / name, pdir / name):
+        try:
+            if cand.is_file() and cand.resolve().is_relative_to(pdir.resolve()):
+                return cand
+        except OSError:
+            pass
+    return None
+
+
 def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
-                   reported: set[str] | None = None, perms_present: bool = True):
+                   reported: set[str] | None = None, perms_present: bool = True,
+                   where: str = "the skill", pdir: Path | None = None, validated: set[Path] | None = None):
     reported = set() if reported is None else reported
     r = rel(p)
     text = read_text(p)
@@ -484,7 +516,16 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
         if NPX_YES.search(line):
             rep.add("fail", "pinned-deps", "`npx --yes` installs and runs a package without asking.", file=r, line=ln,
                     fix="Pin the version (`npx pkg@1.2.3`) and drop `--yes`.")
-        for cmd, pkg in unpinned_installs(line):
+        for cmd, pkg, what in unpinned_installs(line):
+            if what == "include":
+                target = resolve_include(p, pdir, pkg) if pdir else None
+                if target is None:
+                    rep.add("fail", "pinned-deps", f"`{cmd} {pkg}` reads a dependency file that is not in the plugin.",
+                            file=r, line=ln, fix="Ship the file inside the plugin with every package pinned to an exact version.")
+                elif validated is not None and target not in validated:
+                    validated.add(target)
+                    check_pinned_manifest(target, rep, as_requirements=True)
+                continue
             rep.add("fail", "pinned-deps", f"`{cmd}` installs `{pkg}` without an exact version.", file=r, line=ln,
                     fix="Pin an exact version, for example `pip install requests==2.32.3`, `npm install left-pad@1.3.0`, "
                         "`npx prettier@3.3.3`.")
@@ -502,8 +543,8 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
                     rep.add("fail", "tool-name", f"`{m.group(0)}` is not a Qonto MCP tool.{suggest(t)}", file=r, line=ln)
             elif t not in declared and perms_present and t not in reported:
                 reported.add(t)
-                rep.add("fail", "permissions", f"Uses `{t}` but `permissions.mcp.qonto` does not declare it.", file=r, line=ln,
-                        fix="Declare it, or remove the reference.")
+                rep.add("fail", "permissions", f"Uses `{t}` but {where} does not declare it in `permissions.mcp.qonto`.",
+                        file=r, line=ln, fix="Declare it, or remove the reference.")
         for m in TOOL_TOKEN_RE.finditer(line):
             t = m.group(1)
             if t in seen:
@@ -512,7 +553,7 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
                 seen.add(t)
                 if t not in declared and perms_present and t not in reported:
                     reported.add(t)
-                    rep.add("fail", "permissions", f"Uses `{t}` but `permissions.mcp.qonto` does not declare it.",
+                    rep.add("fail", "permissions", f"Uses `{t}` but {where} does not declare it in `permissions.mcp.qonto`.",
                             file=r, line=ln, fix="Declare it, or remove the reference.")
             elif t.startswith(TOOL_VERBS) and ext == ".md" and t not in reported:
                 seen.add(t)
@@ -536,7 +577,8 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
 
 
 def unpinned_installs(line: str):
-    """Yield (command, package) for every package an install command on this line would fetch without an exact version."""
+    """Yield (command, package, "unpinned") for every package an install command on this line would fetch without an
+    exact version, and (command + flag, file, "include") for every `-r`/`-c` file it reads."""
     for verb_re, kind in INSTALLERS:
         for m in verb_re.finditer(line):
             rest = re.split(r"\s(?:&&|\|\||;|\||#|>|2>)\s", line[m.end():])[0]
@@ -550,6 +592,10 @@ def unpinned_installs(line: str):
                 if not t or not SPEC_TOKEN.match(t):
                     break                 # prose after the command, not a package
                 if t.startswith("-"):
+                    if t in ("-r", "--requirement", "-c", "--constraint") and i + 1 < len(toks):
+                        yield f"{m.group(0).strip()} {t}", toks[i + 1], "include"
+                        i += 2
+                        continue
                     if t in FLAG_TAKES_VALUE and i + 1 < len(toks):
                         if t in ("-p", "--package", "--from", "--with"):   # the value is a package
                             packages.append(toks[i + 1])
@@ -571,21 +617,28 @@ def unpinned_installs(line: str):
                     continue
                 if kind0 == "pip" or (kind0 == "uvx" and "==" in pkg):
                     if not PIP_PINNED.match(pkg):
-                        yield m.group(0).strip(), pkg
+                        yield m.group(0).strip(), pkg, "unpinned"
                     continue
                 name, sep, ver = (pkg[1:].partition("@") if pkg.startswith("@") else pkg.partition("@"))
                 if not sep or not NPM_EXACT.match(ver):
-                    yield m.group(0).strip(), pkg
+                    yield m.group(0).strip(), pkg, "unpinned"
 
 
-def check_pinned_manifest(p: Path, rep: Report):
+def check_pinned_manifest(p: Path, rep: Report, as_requirements: bool = False):
     r = rel(p)
     text = read_text(p)
-    if p.name.startswith("requirements") and p.suffix == ".txt":
+    if as_requirements or (p.name.startswith("requirements") and p.suffix == ".txt"):
         for ln, line in enumerate(text.splitlines(), 1):
             s = line.split("#")[0].strip()
-            if not s or s.startswith(("-r", "--", "-c")):
+            if not s:
                 continue
+            if s.startswith(("-r", "--requirement", "-c", "--constraint", "-e", "--editable", "-i", "--index-url",
+                             "--extra-index-url", "-f", "--find-links", "--trusted-host")):
+                rep.add("fail", "pinned-deps", f"`{s}` pulls dependencies from a place this check does not validate.",
+                        file=r, line=ln, fix="List every package in this file with an exact version, from the default index.")
+                continue
+            if s.startswith("-"):
+                continue   # a plain pip option such as --pre
             if "==" not in s.split(";")[0]:
                 rep.add("fail", "pinned-deps", f"`{s}` is not pinned to an exact version.", file=r, line=ln,
                         fix="Use `package==1.2.3`.")
@@ -616,36 +669,57 @@ def check_hooks(pdir: Path, rep: Report):
             rep.add("note", "layout", f"Ships `{sub}/`.", file=rel(pdir / sub))
 
 
-def check_readme_row(name: str, rep: Report):
-    readme = ROOT / "README.md"
-    if not readme.is_file() or "Available skills" not in read_text(readme):
-        return
-    if not re.search(rf"\|\s*\[?`?{re.escape(name)}`?\]?", read_text(readme)):
-        rep.add("warn", "readme", f"`README.md` has no row for `{name}` in the **Available skills** table.",
-                file="README.md", fix="Add a row so people can find the skill.")
-
-
 def check_manifest(rep: Report):
-    """`claude plugin validate` on the marketplace manifest. Skipped, with a note, when there is no manifest or no CLI."""
-    if not (ROOT / ".claude-plugin" / "marketplace.json").is_file():
-        rep.add("note", "manifest", "No `.claude-plugin/marketplace.json`, manifest validation skipped.")
+    """Validate the marketplace the merge would produce: render it from the plugin directories with
+    `.github/scripts/marketplace.py`, refuse duplicate plugin names, then run `claude plugin validate` on that
+    rendering (written in place for the run, the validator does not follow symlinks, and restored afterwards)."""
+    script = ROOT / ".github" / "scripts" / "marketplace.py"
+    if not script.is_file():
+        rep.add("note", "manifest", "No `.github/scripts/marketplace.py`, manifest validation skipped.")
         return
+    try:
+        sys.dont_write_bytecode = True   # no __pycache__ left behind in the contributor's checkout
+        spec = importlib.util.spec_from_file_location("marketplace", script)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        found = mod.plugins()
+        rendered = mod.render()[0]
+    except Exception as e:   # a broken plugin.json is already a `layout` failure from check_plugin_manifest
+        rep.add("warn", "manifest", f"Could not render the marketplace from the plugin directories ({e.__class__.__name__}: {e}).")
+        return
+    by_name: dict[str, list[str]] = {}
+    for tier, d, m in found:
+        by_name.setdefault(str(m.get("name")), []).append(f"{tier}/{d.name}")
+    for n, dirs in sorted(by_name.items()):
+        if len(dirs) > 1:
+            rep.add("fail", "manifest", f"Plugin name `{n}` is used by {len(dirs)} directories: " + ", ".join(f"`{x}`" for x in dirs) + ".",
+                    fix="Plugin names are unique across `featured/` and `community/`. Rename yours.")
     exe = shutil.which("claude")
     if not exe:
         rep.add("note", "manifest", "`claude` CLI not on PATH, skipped `claude plugin validate .`.")
         return
+    mpath = ROOT / ".claude-plugin" / "marketplace.json"
+    backup = mpath.read_bytes() if mpath.is_file() else None
     try:
+        mpath.parent.mkdir(exist_ok=True)
+        mpath.write_text(rendered, encoding="utf-8")
         out = subprocess.run([exe, "plugin", "validate", ".", "--strict", "--json"], cwd=ROOT, text=True,
                              capture_output=True, timeout=120)
         data = json.loads(out.stdout or "{}")
     except (subprocess.TimeoutExpired, json.JSONDecodeError) as e:
         rep.add("warn", "manifest", f"`claude plugin validate` did not return a report ({e.__class__.__name__}).")
         return
+    finally:
+        if backup is None:
+            mpath.unlink(missing_ok=True)
+        else:
+            mpath.write_bytes(backup)
+    where = ".claude-plugin/marketplace.json (as regenerated after merge)"
     for w in (data.get("manifest") or {}).get("warnings", []):
-        rep.add("warn", "manifest", f"{w.get('path')}: {w.get('message')}", file=".claude-plugin/marketplace.json")
+        rep.add("warn", "manifest", f"{w.get('path')}: {w.get('message')}", file=where)
     if not data.get("success", False):
         for err in (data.get("manifest") or {}).get("errors", []):
-            rep.add("fail", "manifest", f"{err.get('path')}: {err.get('message')}", file=".claude-plugin/marketplace.json")
+            rep.add("fail", "manifest", f"{err.get('path')}: {err.get('message')}", file=where)
         for item in data.get("contents") or []:
             for err in item.get("errors", []):
                 rep.add("fail", "manifest", f"{item.get('file')}: {err.get('message')}", file=str(item.get("file", "")))
@@ -662,23 +736,29 @@ def check_plugin(name: str, rep: Report):
     if not skill_dirs:
         rep.add("fail", "layout", f"`{rel(pdir)}/{SKILLS_DIR}/` has no skill.", file=rel(pdir),
                 fix=f"Add at least one `{SKILLS_DIR}/<skill-name>/SKILL.md`.")
-    declared: set[str] = set()
-    hosts: set[str] = set()
-    perms_present = True
+    # Each skill is scanned against its own permissions block, so one skill cannot borrow another's declaration.
+    # Files outside skills/ (hooks, agents, commands, docs, .mcp.json) belong to the plugin as a whole and are
+    # scanned against the union of the blocks.
+    scopes = []   # (dir, label, declared tools, declared hosts, permissions block present)
     for sd in skill_dirs:
         fm, d, h = check_frontmatter(sd, rep)
-        declared |= d
-        hosts |= h
-        perms_present = perms_present and isinstance(fm.get("permissions"), dict)
-    reported: set[str] = set()
+        scopes.append((sd, f"`{rel(sd)}/SKILL.md`", d, h, isinstance(fm.get("permissions"), dict)))
+    union = (None, "any skill of the plugin",
+             set().union(*(sc[2] for sc in scopes)) if scopes else set(),
+             set().union(*(sc[3] for sc in scopes)) if scopes else set(),
+             all(sc[4] for sc in scopes))
+    reported: dict[str, set[str]] = {}
+    validated: set[Path] = set()
     for p in files:
         ext = p.suffix.lower()
         if p.name in {"requirements.txt", "package.json", "pyproject.toml"} or p.name.startswith("requirements"):
+            validated.add(p)
             check_pinned_manifest(p, rep)
         if ext in TEXT_EXT and ext != ".svg" or p.name in ALLOWED_DOTFILES:
-            scan_text_file(p, declared, hosts, rep, reported=reported, perms_present=perms_present)
+            scope = next((sc for sc in scopes if p.is_relative_to(sc[0])), union)
+            scan_text_file(p, scope[2], scope[3], rep, reported=reported.setdefault(scope[1], set()),
+                           perms_present=scope[4], where=scope[1], pdir=pdir, validated=validated)
     check_hooks(pdir, rep)
-    check_readme_row(name, rep)
 
 
 # --------------------------------------------------------------------------- output
@@ -735,11 +815,13 @@ def main() -> int:
     ap.add_argument("--annotations", action="store_true", help="print GitHub workflow annotations")
     args = ap.parse_args()
 
+    global BASE
     rep = Report()
     if args.all or not args.base:
         files = all_plugin_files()
         plugins = {"/".join(f.split("/")[:2]) for f in files if f.split("/")[0] in PLUGIN_ROOTS and f.count("/") >= 2}
     else:
+        BASE = args.base
         files = changed_files(args.base, args.head)
         plugins = check_repo_level(files, args.actor, rep)
         check_dco(args.base, args.head, rep)

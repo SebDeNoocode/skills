@@ -32,7 +32,8 @@ everything in it. Please read the checklist before submitting.
 - [ ] The frontmatter has a `permissions` block listing every Qonto MCP tool, host,
       environment variable and native tool the skill uses
 - [ ] `python3 .github/format-check/format_check.py --base origin/main` passes
-- [ ] I have added a row to the **Available skills** table in `README.md`
+- [ ] When updating a plugin that is already merged, `version` in `.claude-plugin/plugin.json` is bumped
+      (the **Available skills** table in `README.md` and the marketplace are generated, nothing to add there)
 
 ## Nothing private in this pull request
 
