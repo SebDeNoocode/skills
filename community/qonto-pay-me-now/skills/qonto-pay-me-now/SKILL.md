@@ -1,6 +1,12 @@
 ---
 name: qonto-pay-me-now
 description: Quote-to-cash accelerator for Qonto accounts. Detects accepted quotes that were never invoiced, generates the invoice from the quote (draft first, explicit confirmation before sending), creates a Qonto payment link so the client can pay instantly by card or bank transfer, optionally shortens it into a trackable link (plus a QR code for printed invoices), then follows up — link clicked but unpaid after 48 h triggers a proposed gentle nudge. Use for "my quote was accepted, invoice it and get me paid", "create a payment link for this invoice", "who clicked my payment links but didn't pay?", "fais-moi payer ce devis".
+permissions:
+  mcp:
+    qonto: [create_client_invoice, create_payment_link, delete_client_invoice, get_organization, get_payment_link, list_client_invoices, list_payment_links, list_quotes, list_transactions, mark_client_invoice_as_paid, send_client_invoice]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Pay Me Now
