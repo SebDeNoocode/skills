@@ -1,6 +1,12 @@
 ---
 name: qonto-subscription-guardian
 description: Capped virtual card generation for Qonto subscriptions — an action utility, nothing more. Lightly detects recurring charges (cards AND direct debits, monthly, quarterly AND yearly) over 24–36 months just to list subscription candidates, lets the user pick which ones to protect, then — one at a time, with explicit consent and the user's own SCA — creates a dedicated capped virtual card per chosen subscription (payment_monthly_limit = current price + a small margin) and names it SUB-<Vendor>. Checks the plan's virtual-card allowance before proposing anything. Use for "cap this subscription", "plafonne cet abonnement", "une carte par abonnement", "protect my subscriptions with capped cards", "Adobe surpréleve, bloque-le". For the full recurring-spend audit (annual cost, zombies, duplicates, price increases), use qonto-subscription-audit instead.
+permissions:
+  mcp:
+    qonto: [change_card_status, create_card, create_card_request, get_authenticated_membership, get_organization, get_subscription, list_cards, list_transactions, modify_transaction_cash_flow_category, update_card]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Subscription Guardian
