@@ -1,6 +1,12 @@
 ---
 name: qonto-receipt-hunter
 description: Receipt hunter for Qonto accounts. Finds transactions missing their receipt, ranks them by urgency (recoverable VAT at stake, amount, age), then hunts the original receipts down in connected sources — Gmail (merchant/amount/date search around the purchase date) and Google Drive — and attaches each found original to the right transaction, one user confirmation at a time. Use for "quelles transactions sans justificatif ?", "hunt my missing receipts", "combien de TVA je risque de perdre ?", "retrouve la facture Amazon dans mes mails", "attach this receipt to the right transaction".
+permissions:
+  mcp:
+    qonto: [get_attachment, get_organization, list_transaction_attachments, list_transactions, remove_transaction_attachment, request_attachment_upload, upload_attachment]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Receipt Hunter
