@@ -1,6 +1,12 @@
 ---
 name: qonto-invoice-chaser
 description: Intelligent late-invoice chaser for Qonto accounts. Detects overdue client invoices, cross-checks them against real incoming transactions (an "unpaid" invoice may already be paid — proposes marking it), profiles each client's payment behavior, then drafts the right graduated reminder — courteous nudge (~D+7), firm reminder (~D+21), formal notice with legal interest and the €40 recovery indemnity (~D+45, France). Delivers as Gmail drafts when the Gmail MCP is connected, ready-to-copy text otherwise. Use for "relance mes impayés", "who owes me money?", "has invoice X been paid?", "write a reminder for this invoice", "quel est mon encours client ?", "prepare a formal notice".
+permissions:
+  mcp:
+    qonto: [create_payment_link, delete_client_invoice, get_client, get_organization, list_client_invoices, list_transactions, mark_client_invoice_as_paid]
+  network: []
+  env: []
+  tools: [Read]
 ---
 
 # Qonto Invoice Chaser
