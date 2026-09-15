@@ -182,11 +182,13 @@ def parse_frontmatter(text: str) -> tuple[dict | None, str, int]:
     return None, text, 1
 
 
-def maintainers() -> set[str]:
-    p = ROOT / "MAINTAINERS"
-    if not p.is_file():
+def maintainers(base: str) -> set[str]:
+    """Maintainers from trusted base commit, never contributor-controlled PR head."""
+    try:
+        text = git("show", f"{base}:MAINTAINERS")
+    except subprocess.CalledProcessError:
         return set()
-    return {l.strip().lstrip("@").lower() for l in p.read_text().splitlines()
+    return {l.strip().lstrip("@").lower() for l in text.splitlines()
             if l.strip() and not l.startswith("#")}
 
 
@@ -223,9 +225,9 @@ def check_dco(base: str, head: str, rep: Report):
 
 # --------------------------------------------------------------------------- checks
 
-def check_repo_level(files: list[str], actor: str, rep: Report) -> set[str]:
+def check_repo_level(files: list[str], actor: str, base: str, rep: Report) -> set[str]:
     """Protected paths, stray files. Returns the set of plugin dirs touched."""
-    is_maintainer = actor.lower() in maintainers() if actor else False
+    is_maintainer = actor.lower() in maintainers(base) if actor else False
     plugins: set[str] = set()
     for f in files:
         parts = f.split("/")
@@ -888,7 +890,7 @@ def main() -> int:
     else:
         BASE = args.base
         files = changed_files(args.base, args.head)
-        plugins = check_repo_level(files, args.actor, rep)
+        plugins = check_repo_level(files, args.actor, args.base, rep)
         check_dco(args.base, args.head, rep)
     rep.plugins = sorted(plugins)
     for name in rep.plugins:
