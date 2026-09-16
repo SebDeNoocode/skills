@@ -839,6 +839,11 @@ def annotations(rep: Report):
         print(f"::{lvl[f.level]} {loc}title=format-check/{f.check}::{msg}")
 
 
+def esc(s: str) -> str:
+    """The report is posted as a comment: file names and frontmatter values from the pull request must not become HTML."""
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def markdown(rep: Report) -> str:
     fails = [f for f in rep.findings if f.level == "fail"]
     warns = [f for f in rep.findings if f.level == "warn"]
@@ -851,17 +856,17 @@ def markdown(rep: Report) -> str:
         out.append("### Format check passed\n")
         out.append("The submission has the right shape. The Qonto team reviews every skill before merging.\n")
     if rep.plugins:
-        out.append("Plugins in this pull request: " + ", ".join(f"`{p}`" for p in rep.plugins) + "\n")
+        out.append("Plugins in this pull request: " + ", ".join(f"`{esc(p)}`" for p in rep.plugins) + "\n")
 
     def block(title: str, items: list[Finding], with_fix: bool):
         if not items:
             return
         out.append(f"<details open><summary><b>{title}</b> ({len(items)})</summary>\n")
         for f in items:
-            where = f"`{f.file}`" + (f":{f.line}" if f.line else "") if f.file else ""
-            out.append(f"- **{f.check}** {where}  \n  {f.message}")
+            where = f"`{esc(f.file)}`" + (f":{f.line}" if f.line else "") if f.file else ""
+            out.append(f"- **{f.check}** {where}  \n  {esc(f.message)}")
             if with_fix and f.fix:
-                out.append(f"  \n  Fix: {f.fix}" if "```" not in f.fix else f"  \n  Fix:\n{f.fix}")
+                out.append(f"  \n  Fix: {esc(f.fix)}" if "```" not in f.fix else f"  \n  Fix:\n{esc(f.fix)}")
         out.append("\n</details>\n")
 
     block("Must fix", fails, True)
