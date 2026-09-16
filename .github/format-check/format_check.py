@@ -72,7 +72,7 @@ SKILL_MD_FAIL_LINES = 1000
 
 # Paths only maintainers may touch (catalogue, manifests, workflows, this check, the featured tier).
 PROTECTED_PREFIXES = (".github/", ".claude-plugin/", ".codex-plugin/", ".agents/", "featured/")
-PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS", "DCO"}
+PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS"}
 
 # Install commands are tokenised rather than regex-matched so flags (`npm i -D x`, `pip install -U x`) cannot hide
 # the package, several packages on one line are all checked, and `pkg@latest` counts as unpinned.
@@ -201,26 +201,6 @@ def semver_key(v: str) -> tuple:
 def suggest(name: str) -> str:
     m = difflib.get_close_matches(name, KNOWN_TOOLS, n=1, cutoff=0.6)
     return f" Did you mean `{m[0]}`?" if m else ""
-
-
-SIGNOFF_RE = re.compile(r"^Signed-off-by:\s*(.+?)\s*<([^>]+)>\s*$", re.M)
-
-
-def check_dco(base: str, head: str, rep: Report):
-    """Every commit the branch adds carries a Signed-off-by line whose e-mail is the author's or committer's."""
-    out = git("log", "--no-merges", "--format=%H%x00%ae%x00%ce%x00%B%x1e", f"{base}..{head}")
-    fix = ("Sign off every commit: `git rebase --signoff origin/main` then force-push, or `git commit --amend -s` "
-           "for a single commit. The sign-off certifies the Developer Certificate of Origin in `DCO`.")
-    for rec in out.split("\x1e"):
-        if not rec.strip():
-            continue
-        sha, ae, ce, body = rec.lstrip("\n").split("\x00", 3)
-        offs = SIGNOFF_RE.findall(body)
-        if not offs:
-            rep.add("fail", "dco", f"Commit `{sha[:7]}` has no `Signed-off-by` line.", fix=fix)
-        elif not any(e.strip().lower() in {ae.lower(), ce.lower()} for _, e in offs):
-            who = ", ".join(e for _, e in offs)
-            rep.add("fail", "dco", f"Commit `{sha[:7]}` is signed off by {who}, but authored by {ae}.", fix=fix)
 
 
 # --------------------------------------------------------------------------- checks
@@ -896,7 +876,6 @@ def main() -> int:
         BASE = args.base
         files = changed_files(args.base, args.head)
         plugins = check_repo_level(files, args.actor, args.base, rep)
-        check_dco(args.base, args.head, rep)
     rep.plugins = sorted(plugins)
     for name in rep.plugins:
         check_plugin(name, rep)

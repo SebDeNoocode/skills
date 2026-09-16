@@ -56,6 +56,3 @@ history even if you edit or force push afterwards. Treat it as publishing.
       redistribute it
 - [ ] I am entitled to license this work that way, and it does not include code
       or content owned by someone else
-- [ ] Every commit is signed off (`git commit -s`), which certifies the
-      [Developer Certificate of Origin](../DCO): I wrote this, or I have the right
-      to submit it under this licence
