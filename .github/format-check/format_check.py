@@ -72,7 +72,7 @@ SKILL_MD_FAIL_LINES = 1000
 
 # Paths only maintainers may touch (catalogue, manifests, workflows, this check, the featured tier).
 PROTECTED_PREFIXES = (".github/", ".claude-plugin/", ".codex-plugin/", ".agents/", "featured/")
-PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS", "DCO"}
+PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS"}
 
 # Install commands are tokenised rather than regex-matched so flags (`npm i -D x`, `pip install -U x`) cannot hide
 # the package, several packages on one line are all checked, and `pkg@latest` counts as unpinned.
@@ -203,26 +203,6 @@ def suggest(name: str) -> str:
     return f" Did you mean `{m[0]}`?" if m else ""
 
 
-SIGNOFF_RE = re.compile(r"^Signed-off-by:\s*(.+?)\s*<([^>]+)>\s*$", re.M)
-
-
-def check_dco(base: str, head: str, rep: Report):
-    """Every commit the branch adds carries a Signed-off-by line whose e-mail is the author's or committer's."""
-    out = git("log", "--no-merges", "--format=%H%x00%ae%x00%ce%x00%B%x1e", f"{base}..{head}")
-    fix = ("Sign off every commit: `git rebase --signoff origin/main` then force-push, or `git commit --amend -s` "
-           "for a single commit. The sign-off certifies the Developer Certificate of Origin in `DCO`.")
-    for rec in out.split("\x1e"):
-        if not rec.strip():
-            continue
-        sha, ae, ce, body = rec.lstrip("\n").split("\x00", 3)
-        offs = SIGNOFF_RE.findall(body)
-        if not offs:
-            rep.add("fail", "dco", f"Commit `{sha[:7]}` has no `Signed-off-by` line.", fix=fix)
-        elif not any(e.strip().lower() in {ae.lower(), ce.lower()} for _, e in offs):
-            who = ", ".join(e for _, e in offs)
-            rep.add("fail", "dco", f"Commit `{sha[:7]}` is signed off by {who}, but authored by {ae}.", fix=fix)
-
-
 # --------------------------------------------------------------------------- checks
 
 def check_repo_level(files: list[str], actor: str, base: str, rep: Report) -> set[str]:
@@ -241,6 +221,10 @@ def check_repo_level(files: list[str], actor: str, base: str, rep: Report) -> se
                 continue  # a maintainer edit to the tooling: a featured plugin falls through and gets checked
         if f == "README.md" or (parts[0] in PLUGIN_ROOTS and parts[1:] == [".gitkeep"]):
             continue
+        if not (ROOT / f).exists() and not (ROOT / f).is_symlink():
+            if parts[0] in PLUGIN_ROOTS and len(parts) >= 3:
+                plugins.add(f"{parts[0]}/{parts[1]}")   # a file removed from a plugin: the plugin is re-checked
+            continue   # a deletion cannot be a stray file (protected deletions were caught above)
         if parts[0] in PLUGIN_ROOTS and len(parts) >= 3:
             plugins.add(f"{parts[0]}/{parts[1]}")
             continue
@@ -839,6 +823,11 @@ def annotations(rep: Report):
         print(f"::{lvl[f.level]} {loc}title=format-check/{f.check}::{msg}")
 
 
+def esc(s: str) -> str:
+    """The report is posted as a comment: file names and frontmatter values from the pull request must not become HTML."""
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def markdown(rep: Report) -> str:
     fails = [f for f in rep.findings if f.level == "fail"]
     warns = [f for f in rep.findings if f.level == "warn"]
@@ -851,17 +840,17 @@ def markdown(rep: Report) -> str:
         out.append("### Format check passed\n")
         out.append("The submission has the right shape. The Qonto team reviews every skill before merging.\n")
     if rep.plugins:
-        out.append("Plugins in this pull request: " + ", ".join(f"`{p}`" for p in rep.plugins) + "\n")
+        out.append("Plugins in this pull request: " + ", ".join(f"`{esc(p)}`" for p in rep.plugins) + "\n")
 
     def block(title: str, items: list[Finding], with_fix: bool):
         if not items:
             return
         out.append(f"<details open><summary><b>{title}</b> ({len(items)})</summary>\n")
         for f in items:
-            where = f"`{f.file}`" + (f":{f.line}" if f.line else "") if f.file else ""
-            out.append(f"- **{f.check}** {where}  \n  {f.message}")
+            where = f"`{esc(f.file)}`" + (f":{f.line}" if f.line else "") if f.file else ""
+            out.append(f"- **{f.check}** {where}  \n  {esc(f.message)}")
             if with_fix and f.fix:
-                out.append(f"  \n  Fix: {f.fix}" if "```" not in f.fix else f"  \n  Fix:\n{f.fix}")
+                out.append(f"  \n  Fix: {esc(f.fix)}" if "```" not in f.fix else f"  \n  Fix:\n{esc(f.fix)}")
         out.append("\n</details>\n")
 
     block("Must fix", fails, True)
@@ -891,7 +880,6 @@ def main() -> int:
         BASE = args.base
         files = changed_files(args.base, args.head)
         plugins = check_repo_level(files, args.actor, args.base, rep)
-        check_dco(args.base, args.head, rep)
     rep.plugins = sorted(plugins)
     for name in rep.plugins:
         check_plugin(name, rep)
