@@ -59,5 +59,56 @@ class AutomaticExecutionTests(unittest.TestCase):
         self.assertTrue(any(f.level == "note" and f.check == "hooks" for f in report.findings))
 
 
+class AllowedToolsTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.old_root = fc.ROOT
+        fc.ROOT = self.root
+
+    def tearDown(self):
+        fc.ROOT = self.old_root
+        self.temp.cleanup()
+
+    def check(self, allowed, mcp=None, tools=None):
+        skill = self.root / "community" / "plugin" / "skills" / "skill"
+        skill.mkdir(parents=True)
+        frontmatter = {
+            "name": "skill", "description": "A sufficiently detailed skill description.",
+            "allowed-tools": allowed,
+            "permissions": {"mcp": mcp or {}, "network": [], "env": [], "tools": tools or []},
+        }
+        (skill / "SKILL.md").write_text("---\n" + fc.yaml.safe_dump(frontmatter, sort_keys=False) + "---\n")
+        report = fc.Report()
+        fc.check_frontmatter(skill, report)
+        return report
+
+    def test_exact_native_and_mcp_tools_match_declarations(self):
+        report = self.check("Read mcp__qonto__list_transactions mcp__linkup__linkup-search",
+                            {"qonto": ["list_transactions"], "linkup": ["linkup-search"]}, ["Read"])
+        self.assertFalse(report.failed)
+
+    def test_undeclared_native_and_external_mcp_tools_fail(self):
+        report = self.check("Write mcp__linkup__linkup-search", {"qonto": []}, ["Read"])
+        messages = [f.message for f in report.findings if f.level == "fail"]
+        self.assertTrue(any("permissions.tools" in m for m in messages))
+        self.assertTrue(any("permissions.mcp.linkup" in m for m in messages))
+
+    def test_scoped_native_tool_with_spaces_requires_base_declaration(self):
+        allowed = fc.allowed_tool_items("Bash(git status:*) Read")
+        self.assertEqual(allowed, ["Bash(git status:*)", "Read"])
+        report = self.check("Bash(git status:*) Read", tools=["Bash", "Read"])
+        self.assertFalse(report.failed)
+        self.assertTrue(any(f.level == "note" and "scopes `Bash`" in f.message for f in report.findings))
+
+    def test_broad_wildcards_fail(self):
+        report = self.check("* mcp__qonto__*", {"qonto": []})
+        self.assertEqual(sum(f.level == "fail" for f in report.findings), 2)
+
+    def test_unknown_community_native_tool_fails(self):
+        report = self.check([], tools=["UnknownTool"])
+        self.assertTrue(any(f.level == "fail" and "UnknownTool" in f.message for f in report.findings))
+
+
 if __name__ == "__main__":
     unittest.main()
