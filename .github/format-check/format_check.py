@@ -221,6 +221,10 @@ def check_repo_level(files: list[str], actor: str, base: str, rep: Report) -> se
                 continue  # a maintainer edit to the tooling: a featured plugin falls through and gets checked
         if f == "README.md" or (parts[0] in PLUGIN_ROOTS and parts[1:] == [".gitkeep"]):
             continue
+        if not (ROOT / f).exists() and not (ROOT / f).is_symlink():
+            if parts[0] in PLUGIN_ROOTS and len(parts) >= 3:
+                plugins.add(f"{parts[0]}/{parts[1]}")   # a file removed from a plugin: the plugin is re-checked
+            continue   # a deletion cannot be a stray file (protected deletions were caught above)
         if parts[0] in PLUGIN_ROOTS and len(parts) >= 3:
             plugins.add(f"{parts[0]}/{parts[1]}")
             continue
