@@ -55,6 +55,8 @@ FRONTMATTER_KEYS = {"name", "description", "license", "allowed-tools", "metadata
                     "compatibility", "permissions"}
 NATIVE_TOOLS = {"Read", "Write", "Edit", "MultiEdit", "Bash", "Glob", "Grep", "WebFetch",
                 "WebSearch", "Task", "NotebookEdit", "TodoWrite", "AskUserQuestion", "Skill"}
+SCOPED_NATIVE_RE = re.compile(r"^([A-Za-z][A-Za-z0-9]*)(\(.+\))$")
+MCP_TOOL_RE = re.compile(r"^mcp__([A-Za-z0-9-]+)__(.+)$")
 
 TEXT_EXT = {".md", ".txt", ".json", ".yaml", ".yml", ".csv", ".py", ".js", ".mjs", ".cjs",
             ".ts", ".tsx", ".jsx", ".sh", ".html", ".css", ".toml", ".example", ".svg"}
@@ -309,6 +311,13 @@ def str_list(perms: dict, key: str, r: str, rep: Report) -> list[str]:
     return v
 
 
+def allowed_tool_items(value) -> list[str]:
+    """Parse scalar or list `allowed-tools`; parentheses may contain spaces."""
+    if isinstance(value, str):
+        return re.findall(r"[^\s,()]+(?:\([^)]*\))?", value)
+    return [str(x) for x in value] if isinstance(value, list) else []
+
+
 def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
     """`<plugin>/.claude-plugin/plugin.json`: the marketplace entry is generated from it."""
     name = pdir.name
@@ -405,6 +414,7 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
                 fix="Remove `hooks`. Put user-invoked steps in the skill instructions or scripts instead.")
 
     declared: set[str] = set()
+    declared_mcp: dict[str, set[str]] = {}
     hosts: set[str] = set()
     perms = fm.get("permissions")
     if not isinstance(perms, dict):
@@ -425,6 +435,7 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
         if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
             rep.add("fail", "permissions", f"`permissions.mcp.{server}` must be a list of tool names.", file=r, line=2)
             continue
+        declared_mcp[server] = set(tools)
         if server != "qonto":
             rep.add("note", "permissions", f"Declares a second MCP server `{server}` with {len(tools)} tool(s). "
                     "Reviewers look at this closely.", file=r, line=2)
@@ -451,23 +462,46 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
         if not ENV_RE.match(e):
             rep.add("fail", "permissions", f"`permissions.env` entry `{e}` is not an environment variable name.",
                     file=r, line=2, fix="Upper-case letters, digits and underscores, for example `MY_SERVICE_TOKEN`.")
-    for t in str_list(perms, "tools", r, rep):
+    native_tools = set(str_list(perms, "tools", r, rep))
+    for t in native_tools:
         if t not in NATIVE_TOOLS:
-            rep.add("warn", "permissions", f"`permissions.tools` entry `{t}` is not a native agent tool we know.",
+            level = "fail" if is_community_path(pdir) else "warn"
+            rep.add(level, "permissions", f"`permissions.tools` entry `{t}` is not a native agent tool we know.",
                     file=r, line=2, fix=f"Known: {', '.join(sorted(NATIVE_TOOLS))}.")
 
     at = fm.get("allowed-tools")
     if at:
-        items = at.replace(",", " ").split() if isinstance(at, str) else [str(x) for x in at]
-        for item in items:
-            if item.startswith("mcp__qonto__"):
-                t = item[len("mcp__qonto__"):]
-                if t not in KNOWN_TOOLS:
-                    rep.add("fail", "tool-name", f"`allowed-tools` lists `{item}`, which is not a Qonto MCP tool.{suggest(t)}",
+        if not isinstance(at, (str, list)):
+            rep.add("fail", "permissions", "`allowed-tools` must be a string or list of tool names.", file=r, line=2)
+        for item in allowed_tool_items(at):
+            scoped = SCOPED_NATIVE_RE.match(item)
+            mcp_tool = MCP_TOOL_RE.match(item)
+            if item == "*" or (mcp_tool and mcp_tool.group(2) == "*"):
+                rep.add("fail", "permissions", f"`allowed-tools` entry `{item}` grants every tool in its scope.",
+                        file=r, line=2, fix="List each required tool explicitly.")
+            elif item in NATIVE_TOOLS:
+                if item not in native_tools:
+                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.tools` does not.",
+                            file=r, line=2, fix=f"Add `{item}` to `permissions.tools`, or remove it from `allowed-tools`.")
+            elif scoped and scoped.group(1) in NATIVE_TOOLS:
+                native = scoped.group(1)
+                if native not in native_tools:
+                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.tools` does not declare `{native}`.",
+                            file=r, line=2, fix=f"Add `{native}` to `permissions.tools`, or remove the scoped entry.")
+                else:
+                    rep.add("note", "permissions", f"`allowed-tools` scopes `{native}` as `{item}`; reviewers verify the scope.",
                             file=r, line=2)
-                elif t not in declared:
-                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.mcp.qonto` does not declare `{t}`.",
-                            file=r, line=2, fix="Add it to `permissions.mcp.qonto`.")
+            elif mcp_tool:
+                server, tool = mcp_tool.groups()
+                if server == "qonto" and tool not in KNOWN_TOOLS:
+                    rep.add("fail", "tool-name", f"`allowed-tools` lists `{item}`, which is not a Qonto MCP tool.{suggest(tool)}",
+                            file=r, line=2)
+                elif tool not in declared_mcp.get(server, set()):
+                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.mcp.{server}` does not declare `{tool}`.",
+                            file=r, line=2, fix=f"Add `{tool}` to `permissions.mcp.{server}`, or remove it from `allowed-tools`.")
+            else:
+                rep.add("fail", "permissions", f"`allowed-tools` entry `{item}` is not a recognized native or MCP tool.",
+                        file=r, line=2, fix="Use an exact native tool or `mcp__<server>__<tool>` name.")
     return fm, declared, hosts
 
 
