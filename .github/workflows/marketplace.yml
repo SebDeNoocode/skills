@@ -38,7 +38,12 @@ jobs:
         run: python3 .github/scripts/marketplace.py
 
       - name: Validate them with the plugin validator (pinned)
+        # --strict turns warnings into errors, and an empty marketplace is a warning: skip until the first plugin lands.
         run: |
+          count=$(python3 -c 'import json; print(len(json.load(open(".claude-plugin/marketplace.json"))["plugins"]))')
+          if [ "$count" = "0" ]; then
+            echo "no plugins yet, nothing to validate"; exit 0
+          fi
           npm install --global --no-fund --no-audit @anthropic-ai/claude-code@2.1.269
           claude plugin validate . --strict
 
