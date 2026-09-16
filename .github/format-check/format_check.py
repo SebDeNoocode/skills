@@ -161,6 +161,10 @@ def rel(p: Path) -> str:
     return p.relative_to(ROOT).as_posix()
 
 
+def is_community_path(p: Path) -> bool:
+    return p.relative_to(ROOT).parts[0] == CONTRIB_ROOT
+
+
 def read_text(p: Path) -> str:
     return p.read_text(encoding="utf-8", errors="replace")
 
@@ -396,6 +400,9 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
         if k not in FRONTMATTER_KEYS:
             rep.add("warn", "layout", f"Unknown frontmatter key `{k}`.", file=r, line=2,
                     fix=f"Known keys: {', '.join(sorted(FRONTMATTER_KEYS))}.")
+    if "hooks" in fm and is_community_path(pdir):
+        rep.add("fail", "hooks", "Community skills cannot register hooks that execute automatically.", file=r, line=2,
+                fix="Remove `hooks`. Put user-invoked steps in the skill instructions or scripts instead.")
 
     declared: set[str] = set()
     hosts: set[str] = set()
@@ -583,6 +590,9 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
             rep.add("fail", "layout", "`.mcp.json` is not valid JSON.", file=r)
             return
         for sname, s in (cfg.get("mcpServers") or {}).items():
+            if isinstance(s, dict) and "command" in s and is_community_path(pdir):
+                rep.add("fail", "mcp-command", f"Community plugin MCP server `{sname}` starts a local command.", file=r,
+                        fix="Remove the local `command` server. Use a declared HTTPS server, or keep it outside the plugin.")
             url = (s or {}).get("url", "")
             host = re.sub(r"^https?://", "", url).split("/")[0].split(":")[0].lower()
             if url and host not in hosts:
@@ -714,7 +724,11 @@ def check_pinned_manifest(p: Path, rep: Report, as_requirements: bool = False):
 def check_hooks(pdir: Path, rep: Report):
     hooks = pdir / "hooks" / "hooks.json"
     if hooks.is_file():
-        rep.add("note", "hooks", "Registers agent hooks. Reviewers read every hook and the script it runs.", file=rel(hooks))
+        if is_community_path(pdir):
+            rep.add("fail", "hooks", "Community plugins cannot register hooks that execute automatically.", file=rel(hooks),
+                    fix="Remove `hooks/`. Put user-invoked steps in the skill instructions or scripts instead.")
+        else:
+            rep.add("note", "hooks", "Registers agent hooks. Reviewers read every hook and the script it runs.", file=rel(hooks))
     for sub in ("agents", "commands"):
         if (pdir / sub).is_dir():
             rep.add("note", "layout", f"Ships `{sub}/`.", file=rel(pdir / sub))
