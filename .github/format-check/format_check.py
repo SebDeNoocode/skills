@@ -83,6 +83,9 @@ INSTALLERS = (
     (re.compile(r"\buv\s+pip\s+install\b"), "pip"),
     (re.compile(r"\b(?:npm|pnpm)\s+(?:i|install|add)\b"), "npm"),
     (re.compile(r"\byarn\s+add\b"), "npm"),
+    (re.compile(r"\bpnpm\s+dlx\b"), "npx"),
+    (re.compile(r"\bnpm\s+exec\b"), "npx"),
+    (re.compile(r"\bbunx\b"), "npx"),
     (re.compile(r"\bnpx\b"), "npx"),
     (re.compile(r"\buvx\b"), "uvx"),
 )

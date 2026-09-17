@@ -110,5 +110,18 @@ class AllowedToolsTests(unittest.TestCase):
         self.assertTrue(any(f.level == "fail" and "UnknownTool" in f.message for f in report.findings))
 
 
+class PackageExecutionTests(unittest.TestCase):
+    def test_package_execution_aliases_require_exact_versions(self):
+        for command in ("pnpm dlx tool", "npm exec tool", "bunx tool"):
+            with self.subTest(command=command):
+                findings = list(fc.unpinned_installs(command))
+                self.assertEqual(findings, [(command.rsplit(" ", 1)[0], "tool", "unpinned")])
+
+    def test_pinned_package_execution_aliases_pass(self):
+        for command in ("pnpm dlx tool@1.2.3", "npm exec tool@1.2.3", "bunx tool@1.2.3"):
+            with self.subTest(command=command):
+                self.assertEqual(list(fc.unpinned_installs(command)), [])
+
+
 if __name__ == "__main__":
     unittest.main()
