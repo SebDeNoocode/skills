@@ -52,7 +52,6 @@
 
 | Symptôme | Cause | Solution |
 |---|---|---|
-| `403 missing oauth scope` sur `list_cash_flow_categories` ou `get_subscription` | Hors périmètre du connecteur claude.ai | Normal — le skill utilise les labels à la place |
 | `422` à la création de la demande | Champ `credit_account_currency` manquant (non documenté) | Le skill l'envoie systématiquement |
 | Refus d'une demande de test impossible | `decline_request` exige `request_type: "multi_transfers"` (au pluriel) | Géré par le skill |
 | Le sous-compte n'est pas détecté | Nom sans mot-clé (taxe/tax/impôt/TVA) | Renommer le sous-compte dans l'app |
