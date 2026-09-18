@@ -3,7 +3,8 @@ name: qonto-counterparty-watch
 description: "Legal-health radar for the clients and suppliers of a Qonto account. Ranks every counterparty by real exposure (unpaid client invoices, supplier commitments, recurring spend), measures actual payment delays against due dates, and — when a Datagouv MCP is available — cross-checks French public registries (SIRENE deregistrations/cessations, BODACC collective procedures: receivership, liquidation, safeguard) to raise alerts like \"client X owes you N € AND just entered receivership — chase today\". Use for \"who owes me money and are they in trouble?\", \"check my clients' legal health\", \"mon client est-il en redressement ?\", \"which supplier could fail me?\", \"rank my counterparties by risk\"."
 permissions:
   mcp:
-    qonto: [get_client, get_organization, list_cash_flow_categories, list_client_invoices, list_clients, list_supplier_invoices, list_transactions]
+    datagouv: [query_resource_data, search_datasets]
+    qonto: [get_client, get_organization, list_client_invoices, list_clients, list_supplier_invoices, list_transactions]
   network: []
   env: []
   tools: [Read]
@@ -16,7 +17,7 @@ Know who owes you, who's slipping, and who's legally sinking — before it costs
 ## Prerequisites
 1. `get_organization` → accounts, `bank_account_id`/IBAN (required by `list_transactions`), legal country. Nothing hardcoded: the skill adapts to whatever organization it finds.
 2. **Country-aware**: legal-health enrichment relies on **French** public registries (SIRENE, BODACC). For other Qonto countries (DE, ES, IT, AT, NL, BE, PT…), say so plainly and degrade to the Qonto-pure core — exposure ranking + payment-delay scoring work everywhere; never pretend to check a registry that wasn't checked.
-3. **Optional enrichment — detect, don't assume**: probe for a Datagouv MCP (data.gouv.fr tools such as `search_datasets`, `query_resource_data`). Present → legal-health checks activate. Absent → announce it once ("legal-health checks unavailable, delivering Qonto-only scoring") and continue. The core must never depend on it.
+3. **Optional enrichment — detect, don't assume**: use the declared Datagouv tools (`search_datasets`, `query_resource_data`) only when available. Do not probe MCP availability through filesystem or native tools. Present → offer legal-health checks and explain that they send SIRENs or exact legal names from Qonto to Datagouv; activate only after the user explicitly confirms. Absent or declined → announce it once ("legal-health checks unavailable, delivering Qonto-only scoring") and continue. The core must never depend on it.
 
 ## Workflow
 
@@ -32,7 +33,7 @@ Know who owes you, who's slipping, and who's legally sinking — before it costs
 ### 3. Measure real payment behavior
 Per client, across paid invoices: **observed payment date − `due_date`** (use `paid_at` when present, else the matched incoming transaction's `settled_at`). Output average delay, worst delay, and the **trend** (last 3 invoices vs the previous ones) — a client sliding from 15 to 45 days is a signal even with zero legal events.
 
-### 4. Check legal health (only if a Datagouv MCP is present)
+### 4. Check legal health (only if Datagouv is available and the user confirmed)
 For each counterparty with a SIREN (or an exact legal name match, stated as lower confidence):
 - **SIRENE**: administrative status — active, ceased, deregistered.
 - **BODACC**: collective-procedure announcements — **redressement judiciaire** (receivership), **liquidation judiciaire**, **sauvegarde** — with publication dates.
@@ -55,6 +56,7 @@ Every score is justified in one line — the inputs, not just the color.
 
 ## Guardrails
 - **100 % read-only** — no Qonto write tool is ever called; the skill has nothing to approve, sign, or execute.
+- Never send Qonto-derived SIRENs or legal names to Datagouv without explicit user confirmation in the current conversation.
 - Never state a legal status without naming the source and date; never equate "nothing found" with "healthy" when coverage is partial or the SIREN is missing.
 - Legal alerts are signals, not legal advice: for an open procedure, recommend confirming on bodacc.fr and talking to a lawyer/accountant before acting.
 - Degrade honestly: no Datagouv MCP → Qonto-pure scoring, announced once. Non-French counterparties → exposure + delays only.
