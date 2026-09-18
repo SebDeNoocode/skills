@@ -53,6 +53,9 @@ URL_RE = re.compile(r"https?://[^\s)\]>'\"`]+", re.I)
 
 FRONTMATTER_KEYS = {"name", "description", "license", "allowed-tools", "metadata",
                     "compatibility", "permissions"}
+COMMUNITY_MANIFEST_KEYS = {"$schema", "name", "displayName", "version", "description", "author", "homepage",
+                           "repository", "license", "keywords", "metadata", "defaultEnabled", "skills"}
+CANONICAL_SKILLS_PATHS = {"./skills/", "./skills", "skills", "skills/"}
 NATIVE_TOOLS = {"Read", "Write", "Edit", "MultiEdit", "Bash", "Glob", "Grep", "WebFetch",
                 "WebSearch", "Task", "NotebookEdit", "TodoWrite", "AskUserQuestion", "Skill"}
 SCOPED_NATIVE_RE = re.compile(r"^([A-Za-z][A-Za-z0-9]*)(\(.+\))$")
@@ -346,6 +349,14 @@ def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
     if not isinstance(m, dict):
         rep.add("fail", "layout", f"`{r}` must be a JSON object.", file=r)
         return {}
+    if is_community_path(pdir):
+        unsupported = sorted(set(m) - COMMUNITY_MANIFEST_KEYS)
+        if unsupported:
+            rep.add("fail", "automatic-execution",
+                    "Community plugin manifests may contain metadata and the canonical skills path only; unsupported "
+                    "field(s): " + ", ".join(f"`{key}`" for key in unsupported) + ".",
+                    file=r, fix="Remove component configuration from `plugin.json`. Community plugins cannot register "
+                                "automatic execution surfaces or custom component paths.")
     if m.get("name") != name:
         rep.add("fail", "layout", f"Manifest `name` is `{m.get('name')}` but the directory is `{name}`.", file=r,
                 fix="Make them identical.")
@@ -370,7 +381,7 @@ def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
         rep.add("warn", "layout", "Manifest has no `author.name`.", file=r, fix='Add `"author": { "name": "...", "url": "..." }`.')
     if m.get("license") not in (None, "MIT"):
         rep.add("warn", "layout", f"Manifest `license` is `{m.get('license')}`, the repository is MIT.", file=r)
-    if "skills" in m and m["skills"] not in ("./skills/", "./skills", "skills", "skills/"):
+    if "skills" in m and (not isinstance(m["skills"], str) or m["skills"] not in CANONICAL_SKILLS_PATHS):
         rep.add("fail", "layout", f"Manifest `skills` points at `{m['skills']}`.", file=r,
                 fix="Skills live in `skills/` inside the plugin. Drop the key or set it to `./skills/`.")
     return m
@@ -774,6 +785,16 @@ def check_hooks(pdir: Path, rep: Report):
             rep.add("note", "layout", f"Ships `{sub}/`.", file=rel(pdir / sub))
 
 
+def check_automatic_execution_files(pdir: Path, rep: Report):
+    if not is_community_path(pdir):
+        return
+    for path, component in ((pdir / "settings.json", "plugin settings"),
+                            (pdir / "monitors" / "monitors.json", "background monitors")):
+        if path.is_file():
+            rep.add("fail", "automatic-execution", f"Community plugins cannot register {component}.", file=rel(path),
+                    fix="Remove this file. Community marketplace plugins are limited to user- or model-invoked components.")
+
+
 def check_manifest(rep: Report):
     """Validate the marketplace the merge would produce: render it from the plugin directories with
     `.github/scripts/marketplace.py`, refuse duplicate plugin names, then run `claude plugin validate` on that
@@ -867,6 +888,7 @@ def check_plugin(name: str, rep: Report):
             scan_text_file(p, scope[2], scope[3], rep, reported=reported.setdefault(scope[1], set()),
                            perms_present=scope[4], where=scope[1], pdir=pdir, validated=validated)
     check_hooks(pdir, rep)
+    check_automatic_execution_files(pdir, rep)
 
 
 # --------------------------------------------------------------------------- output

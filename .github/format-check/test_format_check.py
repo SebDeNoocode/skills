@@ -59,6 +59,59 @@ class AutomaticExecutionTests(unittest.TestCase):
         self.assertFalse(report.failed)
         self.assertTrue(any(f.level == "note" and f.check == "hooks" for f in report.findings))
 
+    def manifest(self, tier="community", **extra):
+        plugin = self.root / tier / "plugin"
+        path = plugin / ".claude-plugin" / "plugin.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        data = {
+            "name": "plugin", "version": "0.1.0",
+            "description": "A sufficiently detailed plugin description.",
+            "author": {"name": "Contributor"}, "license": "MIT",
+            **extra,
+        }
+        path.write_text(json.dumps(data))
+        report = fc.Report()
+        fc.check_plugin_manifest(plugin, report)
+        return report
+
+    def test_community_manifest_allows_documented_metadata(self):
+        report = self.manifest(displayName="Plugin", homepage="https://example.com",
+                               repository="https://github.com/example/plugin", keywords=["finance"],
+                               metadata={"catalogId": "one"}, defaultEnabled=False, skills="./skills/")
+
+        self.assertFalse(report.failed)
+
+    def test_community_manifest_rejects_component_fields(self):
+        fields = ("hooks", "mcpServers", "lspServers", "monitors", "experimental", "settings", "dependencies",
+                  "channels", "commands", "agents", "outputStyles", "workflows", "userConfig")
+        for field in fields:
+            with self.subTest(field=field):
+                report = self.manifest(**{field: {}})
+                self.assertTrue(any(f.level == "fail" and f.check == "automatic-execution" and field in f.message
+                                    for f in report.findings))
+
+    def test_community_manifest_rejects_non_string_skills_path(self):
+        for value in ([], {}, None):
+            with self.subTest(value=value):
+                report = self.manifest(skills=value)
+                self.assertTrue(any(f.level == "fail" and "Manifest `skills` points" in f.message
+                                    for f in report.findings))
+
+    def test_featured_manifest_components_remain_reviewable(self):
+        self.assertFalse(self.manifest(tier="featured", hooks={}).failed)
+
+    def test_community_settings_and_monitors_are_rejected(self):
+        plugin = self.root / "community" / "plugin"
+        for relative in ("settings.json", "monitors/monitors.json"):
+            path = plugin / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("{}")
+        report = fc.Report()
+
+        fc.check_automatic_execution_files(plugin, report)
+
+        self.assertEqual(sum(f.level == "fail" and f.check == "automatic-execution" for f in report.findings), 2)
+
 
 class LayoutTests(unittest.TestCase):
     def setUp(self):
