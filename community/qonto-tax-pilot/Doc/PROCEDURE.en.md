@@ -52,7 +52,6 @@
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `403 missing oauth scope` on `list_cash_flow_categories` or `get_subscription` | Outside the claude.ai connector scope | Expected — the skill uses labels instead |
 | `422` when creating the request | Missing `credit_account_currency` field (undocumented) | The skill always sends it |
 | Can't decline a test request | `decline_request` requires `request_type: "multi_transfers"` (plural) | Handled by the skill |
 | Sub-account not detected | Name lacks a keyword (tax/taxe/impôt/TVA) | Rename the sub-account in the app |
