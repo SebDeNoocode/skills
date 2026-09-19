@@ -57,7 +57,6 @@
 | The same counterparty shows up twice | Bank label ≠ client record name (SEPA noise, legal suffixes) | Normalization merges them; otherwise align the Qonto client record name |
 | Counterparty "not verifiable" | No SIREN (client record without a VAT number) or no registry match | Fill in the VAT number on the Qonto client record → SIREN extracted |
 | No legal health in the report | Datagouv MCP not connected | The skill announces it and continues Qonto-only; connect Datagouv (step 2) |
-| `403 missing oauth scope` on `list_cash_flow_categories` | Outside the claude.ai connector scope | Expected — the skill doesn't need it (labels as fallback if useful) |
 | A known procedure isn't found | BODACC coverage through data.gouv can be partial | The skill owns it: "nothing found" ≠ "guaranteed healthy"; confirm on bodacc.fr |
 
 ## 🔒 Security reminder
