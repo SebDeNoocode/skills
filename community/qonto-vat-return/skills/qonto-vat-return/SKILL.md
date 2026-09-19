@@ -1,10 +1,10 @@
 ---
 name: qonto-vat-return
 description: >-
-  French VAT return (CA3, form 3310-CA3) preparer for Qonto accounts. Builds the declaration box by box from real account data — collected VAT per rate (20/10/5.5/2.1%), deductible VAT (goods & services, fixed assets), net VAT payable or credit to carry forward — as a "form box → amount → justification" table ready to copy into impots.gouv.fr, with consistency checks against past months and past DGFIP payments. Read-write: it may mark a client invoice as paid only with explicit user confirmation. Use for "prépare ma CA3", "prepare my VAT return for June", "combien de TVA je dois déclarer ce mois-ci ?", "fill in my 3310-CA3", "TVA collectée vs déductible", "check my VAT before I file".
+  French VAT return (CA3, form 3310-CA3) preparer for Qonto accounts. Builds the declaration box by box from real account data — collected VAT per rate (20/10/5.5/2.1%), deductible VAT (goods & services, fixed assets), net VAT payable or credit to carry forward — as a "form box → amount → justification" table ready to copy into impots.gouv.fr, with consistency checks against past months and past DGFIP payments. Read-only, zero writes. Use for "prépare ma CA3", "prepare my VAT return for June", "combien de TVA je dois déclarer ce mois-ci ?", "fill in my 3310-CA3", "TVA collectée vs déductible", "check my VAT before I file".
 permissions:
   mcp:
-    qonto: [get_organization, get_statement, list_cash_flow_categories, list_client_invoices, list_statements, list_supplier_invoices, list_transaction_attachments, list_transactions, mark_client_invoice_as_paid]
+    qonto: [get_organization, get_statement, list_cash_flow_categories, list_client_invoices, list_statements, list_supplier_invoices, list_transaction_attachments, list_transactions]
   network: []
   env: []
   tools: [Read]
@@ -12,7 +12,7 @@ permissions:
 
 # Qonto VAT Return
 
-Turn a month of Qonto data into a CA3 you can copy box by box into impots.gouv.fr. **This is a preparation aid, not a filing**: the skill reads, computes and cross-checks; it never files anything, and every output recommends accountant validation. Its only write marks a client invoice as paid after explicit user confirmation.
+Turn a month of Qonto data into a CA3 you can copy box by box into impots.gouv.fr. **This is a preparation aid, not a filing**: the skill reads, computes and cross-checks; it never files anything, and every output recommends accountant validation. Zero write tools.
 
 ## Prerequisites
 1. `get_organization` **always first** → accounts (`list_transactions` requires `bank_account_id`/`iban`), legal identity, country.
@@ -28,7 +28,7 @@ Turn a month of Qonto data into a CA3 you can copy box by box into impots.gouv.f
 
 ### 2. Collected VAT, per rate
 - **On debits**: invoices issued in the period → group VAT by rate (20 / 10 / 5.5 / 2.1 %), base and tax per rate. Deduct credit notes issued in the period.
-- **On receipts**: match the period's **incoming transactions** to client invoices (amount + counterparty + reference; `paid_at` status helps) and take the matched invoices' VAT breakdown. Incoming credits with no matching invoice → listed separately as "unassigned receipts", never silently taxed or ignored. If an invoice is demonstrably paid but still marked unpaid, offer to call `mark_client_invoice_as_paid`; call it only after explicit user confirmation in the current conversation.
+- **On receipts**: match the period's **incoming transactions** to client invoices (amount + counterparty + reference; `paid_at` status helps) and take the matched invoices' VAT breakdown. Incoming credits with no matching invoice → listed separately as "unassigned receipts", never silently taxed or ignored.
 - → Boxes **01** (base of taxed operations), **08 / 09 / 9B / 11** (base + tax per rate), line **16** (total gross VAT).
 
 ### 3. Deductible VAT — announced as a floor
@@ -61,7 +61,7 @@ Turn a month of Qonto data into a CA3 you can copy box by box into impots.gouv.f
 **Additionally, when the host renders files** (claude.ai artifacts, Claude Desktop, Claude Code): an **HTML dashboard** — the CA3 as a form-like view, collected/deductible split per rate, history sparkline vs past DGFIP payments. If the host cannot render files, say nothing about it: the markdown tables are the deliverable.
 
 ## Guardrails
-- **This prepares, it does not declare.** The skill never files or transmits anything to the DGFIP. Its only Qonto write is `mark_client_invoice_as_paid`, used only after explicit user confirmation. The user (or their accountant) copies the values into impots.gouv.fr themselves.
+- **This prepares, it does not declare.** The skill never files, never transmits anything to the DGFIP, and has **no write tool at all**. The user (or their accountant) copies the values into impots.gouv.fr themselves.
 - Every report states: **estimates from bank data ≠ accounting records — have your accountant validate before filing**, especially reverse-charge, fixed assets and prior credit.
 - Never invent: no French boxes for non-French organizations, no VAT rate guessed on untagged expenses, no reverse-charge amounts computed silently.
 - Degrade honestly on messy data: floors announced with counts, unassigned receipts listed, short history flagged.
