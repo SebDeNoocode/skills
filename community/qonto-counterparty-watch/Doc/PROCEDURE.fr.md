@@ -57,7 +57,6 @@
 | Un même tiers apparaît en double | Libellé bancaire ≠ nom de la fiche client (mentions SEPA, suffixes) | La normalisation fusionne ; sinon, aligner le nom de la fiche client Qonto |
 | Tiers « non vérifiable » | Pas de SIREN (fiche client sans n° TVA) ou pas de correspondance registre | Renseigner le n° de TVA sur la fiche client Qonto → SIREN extrait |
 | Santé légale absente du rapport | MCP Datagouv non connecté | Le skill l'annonce et continue en Qonto pur ; connecter Datagouv (étape 2) |
-| `403 missing oauth scope` sur `list_cash_flow_categories` | Hors périmètre du connecteur claude.ai | Normal — le skill n'en a pas besoin (labels en repli si utile) |
 | Procédure connue mais introuvable | Couverture BODACC via data.gouv partielle | Le skill l'assume : « rien trouvé » ≠ « garanti sain » ; confirmer sur bodacc.fr |
 
 ## 🔒 Rappel sécurité
