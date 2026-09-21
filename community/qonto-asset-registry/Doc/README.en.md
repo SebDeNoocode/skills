@@ -35,7 +35,7 @@ Would someone use this on a Monday morning? Ask anyone who just got the insurer'
 3. **Apply the €500 pre-tax threshold** (configurable): expense or fixed asset; leasing (recurring monthly payments to a financing company) flagged "🔁 financed, not capitalized here"
 4. **Link the receipts**: `list_transaction_attachments` + `get_attachment` per asset; missing → 📎 with a pointer to `qonto-receipt-hunter`; completeness gauge computed
 5. **Indicative depreciation**: usual lives (IT & phones 3 years, tools 5, machines 5–10, vehicles 4–5, furniture 10), straight-line, estimated net book value, end-of-life date — customs, not accounting entries
-6. **Register + insurance inventory**: tables in the conversation, HTML dashboard when the host renders files, handoff to the accounting firm via `qonto-accountant-handoff`
+6. **Register + insurance inventory**: markdown tables in the conversation, with optional handoff to the accounting firm via `qonto-accountant-handoff`
 
 ## 🏗 Functional diagram
 
@@ -57,7 +57,6 @@ Would someone use this on a Monday morning? Ask anyone who just got the insurer'
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Markdown tables: register sorted by category/value, depreciation, summary (N assets · total value · receipt gauge) | **Always** — the baseline |
-| **Dashboard / export** | Self-contained **HTML** file/artifact in the Qonto palette: register by category, receipt-completeness gauge, insured total, depreciation timeline | When the host renders files; automatic fallback to tables |
 | **Insurance inventory** | Ready-to-send table: description, purchase date, purchase value, receipt reference | On demand — ideally before the claim |
 
 ## 🎬 Demo video
