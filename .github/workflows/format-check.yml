@@ -58,6 +58,9 @@ jobs:
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
+      - name: Test the format check
+        run: python3 .github/format-check/test_format_check.py
+
       - name: Upload the report for the comment workflow
         if: always()
         uses: actions/upload-artifact@v4
