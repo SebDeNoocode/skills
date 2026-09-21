@@ -33,7 +33,7 @@ Personne ne tient le registre des immobilisations. Et le jour du vol ou du sinis
 3. **Seuil des 500 € HT** (configurable) : charge ou immobilisation ; leasing/LOA (mensualités récurrentes chez un financeur) signalé « 🔁 financé, pas immobilisé ici »
 4. **Justificatifs liés** : `list_transaction_attachments` + `get_attachment` par actif ; manquant → 📎 avec renvoi vers `qonto-receipt-hunter` ; jauge de complétude calculée
 5. **Amortissements indicatifs** : durées usuelles (tableau ci-dessous), linéaire, valeur nette comptable estimée, date de fin — des usages, pas des écritures comptables
-6. **Registre + inventaire assurance** : tableaux dans la conversation, dashboard HTML si l'hôte affiche les fichiers, transmission au cabinet via `qonto-accountant-handoff`
+6. **Registre + inventaire assurance** : tableaux markdown dans la conversation, avec transmission optionnelle au cabinet via `qonto-accountant-handoff`
 
 ## 🏗 Schéma fonctionnel
 
@@ -59,7 +59,6 @@ Chaque ligne du registre porte un statut : ✅ immobilisation · 💰 charge (< 
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Tableaux markdown : registre trié par catégorie/valeur, amortissements, résumé (N actifs · valeur totale · jauge justificatifs) | **Toujours** — c'est la base |
-| **Dashboard / export** | Fichier/artifact **HTML autoportant** charte Qonto : registre par catégorie, jauge de complétude des justificatifs, total assuré, frise d'amortissement | Si l'hôte affiche les fichiers ; repli automatique sur les tableaux |
 | **Inventaire assurance** | Tableau prêt à transmettre : description, date d'achat, valeur d'achat, référence du justificatif | À la demande, ou après un sinistre |
 
 ## 🎬 Vidéo de démo

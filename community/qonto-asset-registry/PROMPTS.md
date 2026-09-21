@@ -21,4 +21,3 @@ Invoke with `/qonto-asset-registry <your request>` — or just ask in plain lang
 
 - "For the assets missing receipts, recover them with qonto-receipt-hunter."
 - "Package the register and depreciation table for my accountant with qonto-accountant-handoff."
-- "Build an HTML dashboard of the register — categories, completeness gauge, insured total."

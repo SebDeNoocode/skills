@@ -37,7 +37,6 @@ Il travaille avec ce que ton compte contient déjà — transactions, factures f
 - « **Quels équipements n'ont pas de justificatif lié ?** »
 - « **Génère l'inventaire assurance, prêt à envoyer à mon assureur.** »
 - « **Que vaut encore mon parc informatique aujourd'hui ?** » (valeur nette comptable estimée)
-- « **Fais un dashboard HTML du registre.** »
 - « **J'ai revendu [tel équipement] : sors-le du registre.** » (les cessions, c'est toi qui les déclares)
 
 ## 4️⃣ Formats de sortie (où atterrit le registre ?)
@@ -45,7 +44,6 @@ Il travaille avec ce que ton compte contient déjà — transactions, factures f
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Tableaux markdown : registre, amortissements, résumé (N actifs · valeur totale · jauge justificatifs) | **Toujours** — c'est la base |
-| **Dashboard / export** | Fichier/artifact **HTML autoportant** charte Qonto : registre par catégorie, jauge de complétude, total assuré | Si l'hôte affiche les fichiers (artifacts claude.ai, Claude Desktop, Claude Code) ; repli sur les tableaux sinon |
 | **Inventaire assurance** | Tableau prêt à transmettre (description, date d'achat, valeur, justificatif) | À la demande — idéalement avant le sinistre |
 
 ## 5️⃣ Dépannage (erreurs connues et vérifiées)

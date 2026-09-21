@@ -37,7 +37,6 @@ It works with what your account already contains — transactions, supplier invo
 - "**Which assets have no linked receipt?**"
 - "**Generate the insurance inventory, ready to send to my insurer.**"
 - "**What is my IT hardware still worth today?**" (estimated net book value)
-- "**Build an HTML dashboard of the register.**"
 - "**I sold [that asset]: take it off the register.**" (disposals are yours to declare)
 
 ## 4️⃣ Output formats (where does the register land?)
@@ -45,7 +44,6 @@ It works with what your account already contains — transactions, supplier invo
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Markdown tables: register, depreciation, summary (N assets · total value · receipt gauge) | **Always** — the baseline |
-| **Dashboard / export** | Self-contained **HTML** file/artifact in the Qonto palette: register by category, completeness gauge, insured total | When the host renders files (claude.ai artifacts, Claude Desktop, Claude Code); fallback to tables otherwise |
 | **Insurance inventory** | Ready-to-send table (description, purchase date, value, receipt) | On demand — ideally before the claim |
 
 ## 5️⃣ Troubleshooting (known, verified quirks)

@@ -46,7 +46,7 @@ Straight-line over usual French useful lives: **IT & telephony 3 years · tools 
 3. **Insurance inventory** — the document the insurer asks for after a theft or a claim: description, purchase date, purchase value, receipt reference. Ready to send.
 4. Summary line: N assets · total purchase value · receipt gauge · items to confirm.
 
-**Additionally, when the host renders files** (claude.ai artifacts, Claude Desktop, Claude Code): a self-contained **HTML dashboard** in the Qonto palette — register by category, receipt-completeness gauge, insured total, depreciation timeline. If the host cannot render files, say nothing about it: the markdown tables are the deliverable. To hand the register to the accounting firm, chain with **qonto-accountant-handoff**.
+To hand the register to the accounting firm, chain with **qonto-accountant-handoff**.
 
 ## Guardrails
 - **100% read-only**: never call any write tool, ever. No category changes, no uploads, no requests.
