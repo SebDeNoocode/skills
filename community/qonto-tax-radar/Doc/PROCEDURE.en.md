@@ -37,14 +37,12 @@ Bonus (optional): the more receipts you attach in Qonto, the greener axis 4 (VAT
 - "**Focus on VAT: what am I deducting without a receipt on file?**" → axis 4 only, per-transaction detail
 - "**Review this year's restaurants and gifts**" → axes 1–2 only
 - "**Re-run the pre-audit and compare with the last report**" → comparative re-run
-- "**Generate the pre-audit notice as HTML**" → rich report when the host renders files
 
 ## 4️⃣ Output formats (where does the report land?)
 
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Global banner + 8-axis table + findings detail + remediation plan (markdown) | **Always** — the baseline |
-| **Interactive "pre-audit notice"** | **HTML** file/artifact: global grade, per-axis gauges, checklist | When the host renders files; automatic fallback to markdown otherwise |
 | **Comparative re-run** | Same report, with the grade's evolution | Every re-run |
 
 ## 5️⃣ Troubleshooting (known, verified quirks)

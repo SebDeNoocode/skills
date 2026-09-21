@@ -3,7 +3,7 @@ name: qonto-tax-radar
 description: French tax pre-audit ("pré-contrôle fiscal") for Qonto accounts, 100% read-only. Screens transactions against the 8 verification axes real DGFIP auditors use — lavish expenses, personal spending booked as business, director's current account, VAT deducted vs receipts on file, benefits in kind, duplicate charges, cash, recurring round amounts — and returns a risk report (🟢🟡🔴 per axis, amounts at stake, cited tax rules, fixes to make first). Use for "lance mon pré-contrôle fiscal", "am I ready for a tax audit?", "quels risques fiscaux dans mes comptes ?", "audit my expenses like a tax inspector would", "what would the tax office flag?".
 permissions:
   mcp:
-    qonto: [get_organization, list_cash_flow_categories, list_labels, list_supplier_invoices, list_transaction_attachments, list_transactions, request_attachment_upload]
+    qonto: [get_organization, list_cash_flow_categories, list_labels, list_supplier_invoices, list_transaction_attachments, list_transactions]
   network: []
   env: []
   tools: [Read]
@@ -57,8 +57,6 @@ Per axis: 🟢 clean · 🟡 to document · 🔴 exposed — driven by count AND
 3. **Top findings detail** (date · counterparty · amount · rule cited · fix), IBANs masked.
 4. **Remediation plan**, ranked: receipts to recover (per transaction), expenses to reimburse/reclassify, documents to produce (mileage log, AG minutes) — each item is an action the user takes in the Qonto app or with their accountant; the skill itself changes nothing.
 5. Disclaimer footer (educational simulation · accountant validation · possible under/over-estimation).
-
-**Additionally, when the host renders files** (claude.ai artifacts, Claude Desktop, Claude Code): an **HTML "pre-audit notice"** — grade banner, 8 axis gauges, findings table, remediation checklist. If the host cannot render files, say nothing about it: the markdown report is the deliverable.
 
 ### 6. The retention loop
 Close with: "fix these, re-run me, watch the grade improve." The re-run on cleaned data is the payoff.

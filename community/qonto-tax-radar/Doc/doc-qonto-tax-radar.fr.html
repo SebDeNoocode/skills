@@ -180,7 +180,6 @@
   <div class="scroll"><table>
     <tr><th>Sortie</th><th>Format</th><th>Quand</th></tr>
     <tr><td><b>Réponse dans la conversation</b></td><td>Bandeau global + tableau 8 axes + détail des signalements + plan de régularisation (markdown)</td><td><strong>Toujours</strong> — c'est la base</td></tr>
-    <tr><td><b>« Avis de pré-contrôle » interactif</b></td><td>Fichier/artifact <strong>HTML</strong> : note globale, jauges par axe, tableau des signalements, checklist</td><td>Si l'hôte affiche les fichiers (artifacts claude.ai, Claude Desktop, Claude Code) ; repli automatique sur le markdown sinon</td></tr>
     <tr><td><b>Re-run comparatif</b></td><td>Même rapport, avec l'évolution de la note</td><td>À chaque relance — la boucle de rétention</td></tr>
   </table></div>
 </section>
@@ -194,7 +193,6 @@
   <h2>💡 Améliorations possibles</h2>
   <div class="scroll"><table>
     <tr><th>Idée</th><th>Effort</th><th>Note</th></tr>
-    <tr><td>Mode « remédiation assistée » : <code>request_attachment_upload</code> + labels « à documenter », sous consentement explicite</td><td>Faible</td><td>Les writes existent dans le MCP — v1 volontairement lecture seule, c'est le positionnement</td></tr>
     <tr><td><strong>Grilles de vérification par pays</strong> (DE · ES · IT…)</td><td>Moyen</td><td>Qonto est paneuropéen ; v1 = France + axes universels</td></tr>
     <tr><td>Multi-MCP optionnel : croiser l'axe 4 avec les factures retrouvées dans Gmail/Drive</td><td>Moyen</td><td>Détection dynamique — s'active si le MCP est présent, sinon le skill le dit et continue</td></tr>
     <tr><td>Suivi de la note dans le temps (historique des re-runs)</td><td>Faible</td><td>La boucle de rétention, chiffrée</td></tr>

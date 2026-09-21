@@ -166,7 +166,6 @@
   <div class="scroll"><table>
     <tr><th>Output</th><th>Format</th><th>When</th></tr>
     <tr><td><b>Conversation reply</b></td><td>Global banner + 8-axis table + findings detail + remediation plan (markdown)</td><td><strong>Always</strong> — the baseline</td></tr>
-    <tr><td><b>Interactive "pre-audit notice"</b></td><td><strong>HTML</strong> file/artifact: global grade, per-axis gauges, findings table, checklist</td><td>When the host renders files (claude.ai artifacts, Claude Desktop, Claude Code); automatic fallback to markdown</td></tr>
     <tr><td><b>Comparative re-run</b></td><td>Same report, with the grade's evolution</td><td>Every re-run — the retention loop</td></tr>
   </table></div>
 </section>
@@ -180,7 +179,6 @@
   <h2>💡 Roadmap ideas</h2>
   <div class="scroll"><table>
     <tr><th>Idea</th><th>Effort</th><th>Note</th></tr>
-    <tr><td>Assisted remediation: <code>request_attachment_upload</code> + "to document" labels, behind explicit consent</td><td>Low</td><td>The writes exist in the MCP — v1 is deliberately read-only, that's the positioning</td></tr>
     <tr><td><strong>Country-specific audit grids</strong> (DE · ES · IT…)</td><td>Medium</td><td>Qonto is pan-European; v1 = France + universal axes</td></tr>
     <tr><td>Optional multi-MCP enrichment: cross-check axis 4 against invoices found in Gmail/Drive</td><td>Medium</td><td>Detected dynamically — activates when the MCP is present, otherwise the skill says so and continues</td></tr>
     <tr><td>Grade tracking over time (re-run history)</td><td>Low</td><td>The retention loop, quantified</td></tr>
