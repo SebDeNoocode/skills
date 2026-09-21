@@ -64,7 +64,6 @@ Vocabulaire imposé partout : « point d'attention », « à documenter », « �
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Bandeau de risque global + tableau 8 axes + détail des signalements + plan de régularisation, en markdown | **Toujours** — c'est la base |
-| **« Avis de pré-contrôle » interactif** | Fichier/artifact **HTML** : note globale, jauges par axe, tableau des signalements, checklist de régularisation | Si l'hôte affiche les fichiers (artifacts claude.ai, Claude Desktop, Claude Code) ; sinon repli automatique sur le markdown |
 | **Relance comparative** | Même rapport après corrections — la note s'améliore, c'est la boucle de rétention | À chaque re-run |
 
 ## 🎬 Vidéo de démo
@@ -75,7 +74,6 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : la peur du contrôle →
 
 | Idée | Effort | Note |
 |---|---|---|
-| Mode « remédiation assistée » : demandes de justificatifs (`request_attachment_upload`) + labels « à documenter », sous consentement explicite | Faible | Les writes existent dans le MCP — v1 volontairement lecture seule, c'est le positionnement |
 | Axes par pays (DE · ES · IT…) : grilles de vérification locales | Moyen | Qonto est paneuropéen ; v1 = France + axes universels |
 | Multi-MCP optionnel : croiser l'axe 4 avec les factures retrouvées dans Gmail/Drive | Moyen | Détection dynamique — s'active si le MCP est présent, sinon le skill le dit et continue |
 | Suivi de la note dans le temps (historique des re-runs) | Faible | La boucle de rétention, chiffrée |

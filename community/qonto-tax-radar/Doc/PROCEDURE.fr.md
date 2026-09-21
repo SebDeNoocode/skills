@@ -37,14 +37,12 @@ Bonus (optionnel) : plus tes justificatifs sont attachés dans Qonto, plus l'axe
 - « **Concentre-toi sur la TVA : qu'est-ce que je déduis sans justificatif ?** » → axe 4 seul, détail par transaction
 - « **Passe en revue mes restaurants et cadeaux de l'année** » → axes 1-2 seuls
 - « **Refais le pré-contrôle et compare avec le dernier rapport** » → re-run comparatif
-- « **Génère l'avis de pré-contrôle en HTML** » → rapport riche si l'hôte affiche les fichiers
 
 ## 4️⃣ Formats de sortie (où atterrit le rapport ?)
 
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Bandeau global + tableau 8 axes + détail + plan de régularisation (markdown) | **Toujours** — c'est la base |
-| **« Avis de pré-contrôle » interactif** | Fichier/artifact **HTML** : note globale, jauges par axe, checklist | Si l'hôte affiche les fichiers ; sinon repli automatique sur le markdown |
 | **Re-run comparatif** | Même rapport, avec l'évolution de la note | À chaque relance |
 
 ## 5️⃣ Dépannage (erreurs connues et vérifiées)

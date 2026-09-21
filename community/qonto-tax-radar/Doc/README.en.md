@@ -71,7 +71,6 @@ Would someone run this on a Monday morning? It's the quarterly "sleep well" ritu
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Global risk banner + 8-axis table + findings detail + remediation plan, in markdown | **Always** — the baseline |
-| **Interactive "pre-audit notice"** | **HTML** file/artifact: global grade, per-axis gauges, findings table, remediation checklist | When the host renders files (claude.ai artifacts, Claude Desktop, Claude Code); automatic fallback to markdown otherwise |
 | **Comparative re-run** | Same report after the fixes — the grade improves, that's the retention loop | Every re-run |
 
 ## 🎬 Demo video
@@ -80,7 +79,6 @@ The ≤ 3-minute demo attached to the PR walks through: the fear → launching t
 
 ## 💡 Roadmap ideas
 
-- Assisted remediation mode: `request_attachment_upload` for each missing receipt + "to document" labels, behind explicit consent — the writes exist in the MCP; v1 is deliberately read-only, that's the positioning
 - Country-specific audit grids (DE · ES · IT…) — Qonto is pan-European; v1 = France + universal axes
 - Optional multi-MCP enrichment: cross-check axis 4 against invoices found in Gmail/Drive when those MCPs are present — detected dynamically, otherwise the skill says so and continues
 - Grade tracking over time (re-run history) — the retention loop, quantified
