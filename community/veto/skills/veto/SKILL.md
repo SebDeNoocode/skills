@@ -3,9 +3,9 @@ name: veto
 description: >-
   Manages guarded accounts receivable in Qonto for French businesses. Audits
   client readiness, verifies French and EU business identity, prepares compliant
-  invoices and quotes, creates invoice-linked payment pages, drafts contextual
-  invoice emails, checks payments, and prepares overdue reminders. Use when the
-  user asks to invoice or bill a client, create a quote, collect payment, check
+  invoices and quotes, creates invoice-linked payment pages, drafts and sends
+  invoice emails after confirmation, checks payments, and prepares overdue
+  reminders. Use when the user asks to invoice or bill a client, create a quote, collect payment, check
   whether an invoice was paid, follow up on an overdue invoice, audit clients,
   or verify French invoice compliance.
 license: MIT
@@ -71,7 +71,11 @@ Run these checks once at the start of an invoicing conversation:
      or inconsistent identifier through the official Annuaire des Entreprises
      before asking the user to type it: run
      `python3 scripts/registry_fr.py "<legal name>" <postcode>` using only the
-     client name and postcode already returned by Qonto. On one match, compare
+     client name and postcode already returned by Qonto. Before using Bash,
+     reduce the name to letters, numbers, spaces, `.`, `,`, `'`, `&`, `(`, `)`,
+     and `-`, and require a digits-only postcode. If any other character is
+     present, do not run the command; ask the user for safe lookup text. On one
+     match, compare
      legal name, address, SIREN/SIRET and VAT number with the Qonto record,
      validate the returned identifier with `validate_fr.py siren`, then show
      the sourced correction and ask before `update_client`. On `NO_MATCH`, ask
@@ -88,8 +92,10 @@ Run these checks once at the start of an invoicing conversation:
      VAT number, run `python3 scripts/vies_eu.py <country> <vat>
      <seller_country> <seller_vat> ["<claimed legal name>"]`. Otherwise run
      `python3 scripts/vies_eu.py <country> <vat> ["<claimed legal name>"]` and
-     state that no consultation reference is available. If no claimed name was
-     supplied, report the validity result first. `INVALID` blocks invoice
+     state that no consultation reference is available. Apply the same safe-name
+     character restriction before placing a claimed name in this Bash command;
+     country and VAT arguments must be ASCII alphanumeric only. If no claimed
+     name was supplied, report the validity result first. `INVALID` blocks invoice
      creation without requesting a name. For `VALID`, request the claimed legal
      name only if an identity comparison is still needed before invoicing, then
      rerun the check with that name. Compare any returned name locally and show
@@ -139,11 +145,11 @@ cannot infer (VAT status, transaction scope, legal rate selection). You must:
 - **Deterministic checks**: for SIREN/SIRET, VAT rates, and reminder penalties,
   prefer running the bundled validator. From the skill directory:
   `python3 scripts/validate_fr.py siren <number>` / `vat <rate>` /
-  `penalty <amount_ttc> <days_late> <annual_rate_percent>`. Use `uv run` if
-  `python3` is older than 3.10, or `py -3` on Windows. **Only pass values you
+  `penalty <amount_ttc> <days_late> <annual_rate_percent>`. **Only pass values you
   have already reduced to the expected shape** (digits/spaces for SIREN, a
   number optionally suffixed with `%` for VAT); never interpolate raw client or
-  invoice text into a shell command. The LLM converses; the validator computes.
+  invoice text into a shell command. Python 3.10 or newer is required; do not
+  install or fetch another runtime. The LLM converses; the validator computes.
 - **VAT rate**: only accept `0.20`, `0.10`, `0.055`, `0.021`, or `0`. For any
   other rate, REFUSE and ask the user to state the applicable legal rate or
   explain the transaction category — do not pick a rate by numeric closeness.
