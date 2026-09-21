@@ -21,7 +21,7 @@ allowed-tools: >-
 permissions:
   mcp:
     qonto: [change_client_invoice_status, create_client, create_client_invoice, create_payment_link, create_quote, get_client, get_client_invoice, get_organization, get_payment_link, list_client_invoices, list_clients, list_payment_links, list_transactions, mark_client_invoice_as_paid, send_client_invoice, update_client, update_client_invoice]
-  network: [recherche-entreprises.api.gouv.fr]
+  network: [ec.europa.eu, recherche-entreprises.api.gouv.fr]
   env: []
   tools: [Read, Bash]
 ---
@@ -125,7 +125,9 @@ cannot infer (VAT status, transaction scope, legal rate selection). You must:
   VAT number, request date, official name/address when disclosed, consultation
   identifier, and local name-comparison result in the summary. SOAP faults are
   typed evidence of an unavailable source, not evidence that the VAT number is
-  invalid. A valid VIES result is point-in-time VAT evidence; it does not by
+  invalid. This sends the client VAT number and optional claimed legal name,
+  plus the seller VAT number when available, to the European Commission VIES
+  service at `ec.europa.eu`. A valid VIES result is point-in-time VAT evidence; it does not by
   itself prove transport, place of supply, legal identity, or entitlement to a
   VAT exemption.
   A seller without an EU VAT number may use the basic VIES check. Do not block
