@@ -1,6 +1,6 @@
 # 💬 Example prompts — qonto-grant-scout
 
-Invoke with `/qonto-grant-scout <your request>` — or just ask in plain language: the skill's description triggers it automatically.
+Invoke with `/qonto-grant-scout <your request>`, or explicitly ask for public-aid research based on Qonto data. Do not invoke for general funding questions unrelated to the user's Qonto account.
 
 ## Getting started
 - "What public grants could my company target, based on my real spending?"
@@ -14,7 +14,5 @@ Invoke with `/qonto-grant-scout <your request>` — or just ask in plain languag
 - "Rank the leads by plausibility and give me one concrete next step for each"
 - "Re-check: any new funding leads since last quarter?"
 
-## Chain it
+## Follow up
 - "Draft the brief I can send my accountant about the best lead"
-- "Put the spending categories behind these signals into my dashboard" — open `qonto-ceo-cockpit`
-- "Benchmark that spending against my sector while we're at it" — run `qonto-sector-benchmark`

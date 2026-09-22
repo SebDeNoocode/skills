@@ -32,7 +32,7 @@ Would someone use this on a Monday morning? "Am I leaving public money on the ta
 ![How it works](assets/flow.en.png)
 
 1. **Real profile**: legal form, sector (NAF when present — inferred from flows otherwise, and flagged as such), region, age, size. The profile is shown to the user, who can correct it before any search
-2. **Read the flows** (12–24 months, paginated ≤ 50): debits classified into aidable categories — training, equipment/CAPEX, digital, R&D-like, hiring, international, energy. Labels used when available (`list_cash_flow_categories` → 403 on the claude.ai connector; labels are the fallback). Card spending matched by `emitted_at`
+2. **Read the flows** (12–24 months, paginated ≤ 50): debits classified into aidable categories — training, equipment/CAPEX, digital, R&D-like, hiring, international, energy. Labels used when available. Card spending matched by `emitted_at`
 3. **Aidable signals**: every significant category becomes a dated, quantified signal — €9,600/year on training, an equipment purchase, growing payroll, foreign clients
 4. **Datagouv search**: `search_datasets` across the aid referentials (national aid database, ADEME, France Num, Bpifrance, regional schemes), `get_dataset_info` for **each dataset's update date**, `query_resource_data` to filter by region/sector/family
 5. **Cross & shortlist**: signals × schemes, every lead with criteria to confirm + dated source + one next step (training fund, ADEME portal, region's desk, Bpifrance advisor)
@@ -60,7 +60,6 @@ This is the creative bet of the portfolio — and the one that leans hardest on 
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Markdown tables: profile + signals, sourced and dated aid shortlist, limits | **Always** — the baseline |
-| **Grant radar** | **HTML** file/artifact: signals × aid families, leads at the intersections, 🟢🟡🔵 tags | When the host renders files (claude.ai artifacts, Claude Desktop, Claude Code); automatic fallback to tables otherwise |
 | **Per-lead brief** | Ready-to-send text block (to the training fund, the accountant, the regional desk): signal, scheme, criteria to confirm, source | On request, for each retained lead |
 
 ## 🎬 Demo video

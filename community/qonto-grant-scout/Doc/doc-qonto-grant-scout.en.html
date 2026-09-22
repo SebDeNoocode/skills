@@ -147,7 +147,7 @@
     <li><strong>Non-queryable resource</strong> (PDF, malformed CSV): the lead becomes a sourced link to the dataset page, stated as such</li>
     <li><strong>Datagouv MCP absent or failing</strong>: spending profile + generic aid families + the right official portals — stated plainly, and the skill continues</li>
     <li><strong>Sector missing</strong> from <code>get_organization</code>: inferred from counterparties, confidence lowered, user can correct</li>
-    <li>Labels unavailable? <code>list_cash_flow_categories</code> returns 403 on the claude.ai connector → fallback to <code>list_labels</code> · card spending matched by <code>emitted_at</code> · pagination ≤ 50 everywhere</li>
+    <li>Labels used when available · card spending matched by <code>emitted_at</code> · pagination ≤ 50 everywhere</li>
   </ul>
 </section>
 
@@ -179,7 +179,6 @@
   <div class="scroll"><table>
     <tr><th>Output</th><th>Format</th><th>When</th></tr>
     <tr><td><b>Conversation reply</b></td><td>Markdown tables: profile + signals, sourced and dated shortlist, limits</td><td><strong>Always</strong> — the baseline</td></tr>
-    <tr><td><b>Grant radar</b></td><td><strong>HTML</strong> file/artifact: signals × aid families, leads at the intersections, 🟢🟡🔵 tags</td><td>When the host renders files (claude.ai artifacts, Claude Desktop, Claude Code); automatic fallback to tables</td></tr>
     <tr><td><b>Per-lead brief</b></td><td>Ready-to-send text block (training fund, accountant, regional desk): signal, scheme, criteria, source</td><td>On request, for each retained lead</td></tr>
   </table></div>
 </section>

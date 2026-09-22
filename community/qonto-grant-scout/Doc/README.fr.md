@@ -32,7 +32,7 @@ Exemple type : « tu dépenses 800 €/mois en formation → ces dispositifs OPC
 ![Fonctionnement global](assets/flow.fr.png)
 
 1. **Profil réel** : forme juridique, secteur (NAF si présent — sinon inféré des flux, et annoncé comme tel), région, ancienneté, taille. Le profil est montré à l'utilisateur, qui peut le corriger avant toute recherche
-2. **Lecture des flux** (12-24 mois, paginé ≤ 50) : débits classés en catégories « aidables » — formation, matériel/CAPEX, numérique, R&D-like, embauche, international, énergie. Labels utilisés si disponibles (`list_cash_flow_categories` → 403 sur le connecteur claude.ai, les labels sont le repli). Cartes rapprochées par `emitted_at`
+2. **Lecture des flux** (12-24 mois, paginé ≤ 50) : débits classés en catégories « aidables » — formation, matériel/CAPEX, numérique, R&D-like, embauche, international, énergie. Labels utilisés si disponibles. Cartes rapprochées par `emitted_at`
 3. **Signaux « aidables »** : chaque poste significatif devient un signal chiffré et daté — 9 600 €/an de formation, un achat matériel, une masse salariale qui monte, des clients à l'export
 4. **Recherche Datagouv** : `search_datasets` sur les référentiels d'aides (base nationale des aides aux entreprises, ADEME, France Num, Bpifrance, régions), `get_dataset_info` pour **la date de chaque dataset**, `query_resource_data` pour filtrer par région/secteur/famille
 5. **Croisement & shortlist** : signaux × dispositifs, chaque piste avec critères à confirmer + source datée + prochaine étape (OPCO, portail ADEME, guichet région, conseiller Bpifrance)
@@ -75,7 +75,6 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (des aides 
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Tableaux markdown : profil + signaux, shortlist d'aides sourcées et datées, limites | **Toujours** — c'est la base |
-| **Grant radar** | Fichier/artifact **HTML** : signaux × familles d'aides, pistes aux intersections, tags 🟢🟡🔵 | Si l'hôte affiche les fichiers (artifacts claude.ai, Claude Desktop, Claude Code) ; sinon repli automatique sur les tableaux |
 | **Fiche par piste** | Bloc texte prêt à envoyer (à l'OPCO, au comptable, au guichet région) : signal, dispositif, critères à confirmer, source | Sur demande, pour chaque piste retenue |
 
 ## 💡 Améliorations possibles (dans les clous du hackathon)

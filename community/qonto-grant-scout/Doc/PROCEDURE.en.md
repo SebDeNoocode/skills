@@ -46,7 +46,6 @@
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Markdown tables: profile + signals, sourced and dated shortlist, limits | **Always** — the baseline |
-| **Grant radar** | **HTML** file/artifact: signals × aid families, leads at the intersections, 🟢🟡🔵 tags | When the host renders files; automatic fallback to tables otherwise |
 | **Per-lead brief** | Ready-to-send text block: signal, scheme, criteria to confirm, source | On request, for each retained lead |
 
 ## 5️⃣ Troubleshooting (known, verified quirks)
@@ -54,7 +53,6 @@
 | Symptom | Cause | Fix |
 |---|---|---|
 | `list_transactions` fails right away | Missing `bank_account_id`/`iban` | The skill **always** calls `get_organization` first |
-| `403 missing oauth scope` on `list_cash_flow_categories` | Outside the claude.ai connector scope | Expected — the skill uses labels (`list_labels`) instead |
 | Huge / truncated responses | Pagination too wide | The skill paginates `per_page` ≤ 50 everywhere |
 | "No aid dataset found" | Referential unavailable or renamed on data.gouv.fr | The skill widens the search, then switches to degraded mode (aid families + official portals) and says so |
 | `query_resource_data` fails on a resource | Non-tabular resource (PDF, malformed CSV) | The lead becomes a sourced link to the dataset page — stated as such |

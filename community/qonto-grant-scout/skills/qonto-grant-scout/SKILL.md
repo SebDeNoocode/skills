@@ -3,7 +3,8 @@ name: qonto-grant-scout
 description: Public-funding scout for Qonto accounts. Builds the company's real profile from the account — sector, location, size, actual spending structure (training, equipment, digital, hiring, export, energy) — then cross-references it with French public aid referentials on data.gouv.fr (via the Datagouv MCP when present) to shortlist plausible grants and subsidies. Every lead carries eligibility criteria to confirm, a dated source, and a concrete next step; the skill never claims eligibility. Use for "quelles aides publiques pour ma boîte ?", "je dépense beaucoup en formation, il existe des aides ?", "what grants could my company target?", "am I leaving public money on the table?".
 permissions:
   mcp:
-    qonto: [get_organization, list_cash_flow_categories, list_labels, list_transactions]
+    datagouv: [get_dataset_info, query_resource_data, search_datasets]
+    qonto: [get_organization, list_labels, list_transactions]
   network: []
   env: []
   tools: [Read]
@@ -24,7 +25,7 @@ Your bank account knows what you invest in; public databases know who gets helpe
 From `get_organization`: legal form, sector/NAF, region (from address), company age, size proxy (incoming volume over the last 12 months). Build a one-paragraph profile the user can correct before anything else happens. Every later search inherits this profile.
 
 ### 2. Read the flows (12–24 months)
-`list_transactions` per account, paginate `per_page: "50"`. Classify **debits** into aid-relevant spending categories: training (training bodies, e-learning, certifications) · equipment/CAPEX · digital (software, SaaS, web) · R&D-like (prototyping, technical subcontracting, specialized tooling) · hiring/payroll trend · international (foreign counterparties, FX) · energy/vehicles/works. Use `list_labels` for the user's own categorization when available (note: `list_cash_flow_categories` returns **403 missing oauth scope** on the claude.ai connector — labels are the fallback). Match card spending by `emitted_at`, not `settled_at`. Annualize each category and keep the evidence (n transactions, top counterparties, trend).
+`list_transactions` per account, paginate `per_page: "50"`. Classify **debits** into aid-relevant spending categories: training (training bodies, e-learning, certifications) · equipment/CAPEX · digital (software, SaaS, web) · R&D-like (prototyping, technical subcontracting, specialized tooling) · hiring/payroll trend · international (foreign counterparties, FX) · energy/vehicles/works. Use `list_labels` for the user's own categorization when available. Match card spending by `emitted_at`, not `settled_at`. Annualize each category and keep the evidence (n transactions, top counterparties, trend).
 
 ### 3. Extract "aidable" signals
 A signal = category + annual amount + trend + evidence. Keep the significant ones: recurring training spend, an equipment purchase or a visible CAPEX ramp, payroll growth, export activity, energy/efficiency spending, sustained digital investment. Show the signals table before searching — this is the "your account says this about you" moment.
@@ -43,10 +44,8 @@ Match signals × schemes. Each lead carries: **what the scheme covers** · **why
 2. **Aid shortlist** (scheme · why you match · criteria to confirm · source + dataset date · next step), each line confidence-tagged: 🟢 fresh dataset + strong signal / 🟡 older dataset or inferred signal / 🔵 generic family, no dataset match.
 3. Honest limits paragraph: what was searched, what wasn't found, which datasets were stale.
 
-**Additionally, when the host renders files** (claude.ai artifacts, Claude Desktop, Claude Code): an HTML **grant radar** — signals on one axis, aid families on the other, leads at the intersections. If the host cannot render files, say nothing about it: the tables are the deliverable.
-
 ## Guardrails
-- **Zero writes.** Only generic search keywords (sector, region, aid family) are sent to Datagouv — never amounts, counterparty names, or IBANs.
+- **Zero writes.** Only generic search keywords (sector, region, aid family) are sent to Datagouv — never amounts, transaction details, counterparty names, IBANs, or account identifiers.
 - **Never claims eligibility.** Schemes open, close, and change: every lead is dated, sourced, and phrased as "to verify". Recommend confirming with the issuing body (OPCO, ADEME, region, Bpifrance) or the accountant before any application.
 - Honest degradation: Datagouv MCP absent, empty account, sector undetectable, non-French company → the skill states what it can and cannot do, and never invents a scheme, an amount, or a deadline.
 - Mask IBANs (last 4 digits). Paginate everything (`per_page` ≤ 50).

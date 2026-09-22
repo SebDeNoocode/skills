@@ -146,7 +146,7 @@
     <li><strong>Ressource non interrogeable</strong> (PDF, CSV cassé) : la piste devient un lien sourcé vers la page du dataset, annoncé comme tel</li>
     <li><strong>MCP Datagouv absent ou en erreur</strong> : profil de dépenses + familles d'aides génériques + les bons portails (aides-entreprises.fr, bpifrance.fr, france-num.gouv.fr, la région) — dit clairement</li>
     <li><strong>Secteur absent</strong> de <code>get_organization</code> : inféré des contreparties, confiance abaissée, corrigeable par l'utilisateur</li>
-    <li>Labels indisponibles ? <code>list_cash_flow_categories</code> renvoie 403 sur le connecteur claude.ai → repli sur <code>list_labels</code> · cartes rapprochées par <code>emitted_at</code> · pagination ≤ 50 partout</li>
+    <li>Labels utilisés si disponibles · cartes rapprochées par <code>emitted_at</code> · pagination ≤ 50 partout</li>
   </ul>
 </section>
 
@@ -178,7 +178,6 @@
   <div class="scroll"><table>
     <tr><th>Sortie</th><th>Format</th><th>Quand</th></tr>
     <tr><td><b>Réponse dans la conversation</b></td><td>Tableaux markdown : profil + signaux, shortlist sourcée et datée, limites</td><td><strong>Toujours</strong> — c'est la base</td></tr>
-    <tr><td><b>Grant radar</b></td><td>Fichier/artifact <strong>HTML</strong> : signaux × familles d'aides, pistes aux intersections, tags 🟢🟡🔵</td><td>Si l'hôte affiche les fichiers (artifacts claude.ai, Claude Desktop, Claude Code) ; repli automatique sur les tableaux sinon</td></tr>
     <tr><td><b>Fiche par piste</b></td><td>Bloc texte prêt à envoyer (OPCO, comptable, guichet région) : signal, dispositif, critères, source</td><td>Sur demande, pour chaque piste retenue</td></tr>
   </table></div>
 </section>
