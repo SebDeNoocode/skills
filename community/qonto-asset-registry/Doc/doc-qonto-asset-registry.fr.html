@@ -131,7 +131,7 @@
     <tr><td><b>Pays</b></td><td><strong>Mécanique universelle.</strong> Seuil 500 € HT + durées d'amortissement = pratique française ; autres pays Qonto (DE, ES, IT…) → registre et inventaire sans suggestion fiscale</td><td>ℹ️ détecté</td></tr>
     <tr><td><b>MCP Qonto connecté</b></td><td>Connecteur officiel (claude.ai / Claude Desktop), login OAuth</td><td>✅</td></tr>
     <tr><td><b>Historique 24-36 mois</b></td><td>En dessous : registre partiel, période couverte annoncée</td><td>⭕</td></tr>
-    <tr><td><b>Justificatifs joints</b></td><td>Plus il y en a, plus l'inventaire est solide ; les manquants sont listés 📎 (renvoi <code>qonto-receipt-hunter</code>)</td><td>⭕</td></tr>
+    <tr><td><b>Justificatifs joints</b></td><td>Plus il y en a, plus l'inventaire est solide ; les manquants sont listés 📎</td><td>⭕</td></tr>
   </table></div>
 </section>
 
@@ -144,7 +144,7 @@
     <li><strong>Marchand généraliste</strong> (marketplace, grande surface) → ligne « ❓ à confirmer » si la nature ne se déduit pas du libellé ou du justificatif — jamais devinée</li>
     <li><strong>Paiement en plusieurs fois</strong> → mensualités égales chez le même vendeur rapprochées en <em>un seul</em> actif à sa valeur totale</li>
     <li><strong>Leasing/LOA</strong> → mensualités récurrentes chez un financeur : « 🔁 financé, pas immobilisé ici », exclu des totaux</li>
-    <li><strong>Justificatif manquant</strong> → ligne 📎 avec le décompte, et <code>qonto-receipt-hunter</code> proposé pour les récupérer</li>
+    <li><strong>Justificatif manquant</strong> → ligne 📎 avec le décompte</li>
     <li>Achats carte datés par <code>emitted_at</code> (règlement décalé de 1-2 jours) · TVA non renseignée → HT estimé et annoncé comme tel · pagination ≤ 50 partout</li>
   </ul>
 </section>
@@ -176,7 +176,7 @@
     <tr><td>💰 Charge</td><td>Sous le seuil : passé en charge, listé pour mémoire</td></tr>
     <tr><td>❓ À confirmer</td><td>Marchand généraliste, nature indéterminable — l'utilisateur tranche</td></tr>
     <tr><td>🔁 Financé</td><td>Leasing/LOA détecté : signalé, jamais compté dans le total</td></tr>
-    <tr><td>📎 Manquant</td><td>Pas de justificatif lié — renvoi vers <code>qonto-receipt-hunter</code></td></tr>
+    <tr><td>📎 Manquant</td><td>Pas de justificatif lié — à récupérer avant de se fier à l'inventaire</td></tr>
   </table></div>
   <p>Les cessions et mises au rebut sont <strong>déclarées par l'utilisateur, jamais supposées</strong>.</p>
 </section>
@@ -192,7 +192,7 @@
 
 <section>
   <h2>🎬 Vidéo de démo</h2>
-  <p>La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (l'inventaire que l'assureur exige et que personne n'a) → le scan → le registre avec justificatifs liés → le moment « tout était déjà là » → dashboard et inventaire assurance. Tournée en live sur un compte de production réel. Le script détaillé de tournage est conservé en interne (hors dépôt).</p>
+  <p>La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (l'inventaire que l'assureur exige et que personne n'a) → le scan → le registre avec justificatifs liés → le moment « tout était déjà là » → rapport et inventaire assurance. Tournée en live sur un compte de production réel. Le script détaillé de tournage est conservé en interne (hors dépôt).</p>
 </section>
 
 <section>
@@ -203,7 +203,7 @@
     <tr><td>Détection des cessions par crédit entrant (revente)</td><td>Moyen</td><td>Toujours proposée à confirmation, jamais supposée</td></tr>
     <tr><td>Rapprochement avec un inventaire physique (photos, étiquettes)</td><td>Moyen</td><td>L'inventaire assurance devient opposable</td></tr>
     <tr><td>Alerte de fin d'amortissement (renouvellement à budgéter)</td><td>Faible</td><td>Réutilise les dates de fin déjà calculées</td></tr>
-    <tr><td>Export CSV pour le cabinet</td><td>Faible</td><td>En complément de <code>qonto-accountant-handoff</code></td></tr>
+    <tr><td>Export CSV pour le cabinet</td><td>Faible</td><td>Format à définir avec le cabinet</td></tr>
   </table></div>
 </section>
 

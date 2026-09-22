@@ -131,7 +131,7 @@
     <tr><td><b>Country</b></td><td><strong>Universal mechanics.</strong> €500 threshold + depreciation lives = French practice; other Qonto countries (DE, ES, IT…) → register and inventory without local tax suggestions</td><td>ℹ️ detected</td></tr>
     <tr><td><b>Qonto MCP connected</b></td><td>Official connector (claude.ai / Claude Desktop), OAuth login</td><td>✅</td></tr>
     <tr><td><b>24–36 months of history</b></td><td>Below that: partial register, covered period stated</td><td>⭕</td></tr>
-    <tr><td><b>Receipts attached</b></td><td>The more there are, the stronger the inventory; missing ones listed 📎 (pointer to <code>qonto-receipt-hunter</code>)</td><td>⭕</td></tr>
+    <tr><td><b>Receipts attached</b></td><td>The more there are, the stronger the inventory; missing ones are listed 📎</td><td>⭕</td></tr>
   </table></div>
 </section>
 
@@ -144,7 +144,7 @@
     <li><strong>Generalist merchant</strong> (marketplace, supermarket) → line "❓ to confirm" unless the label or the attached receipt makes the nature clear — never guessed</li>
     <li><strong>Installment purchases</strong> → equal payments to the same vendor merged into <em>one</em> asset at full value</li>
     <li><strong>Leasing / hire-purchase</strong> → recurring monthly payments to a financer: "🔁 financed, not capitalized here", excluded from totals</li>
-    <li><strong>Missing receipt</strong> → line flagged 📎 with the count disclosed, and <code>qonto-receipt-hunter</code> suggested to recover them</li>
+    <li><strong>Missing receipt</strong> → line flagged 📎 with the count disclosed</li>
     <li>Card purchases dated by <code>emitted_at</code> (settlement lags 1–2 days) · untagged VAT → estimated pre-tax amount, disclosed as such · pagination ≤ 50 everywhere</li>
   </ul>
 </section>
@@ -176,7 +176,7 @@
     <tr><td>💰 Expensed</td><td>Below the threshold: expensed, listed for the record</td></tr>
     <tr><td>❓ To confirm</td><td>Generalist merchant, nature undeterminable — the user decides</td></tr>
     <tr><td>🔁 Financed</td><td>Leasing detected: flagged, never counted in the total</td></tr>
-    <tr><td>📎 Missing</td><td>No linked receipt — pointer to <code>qonto-receipt-hunter</code></td></tr>
+    <tr><td>📎 Missing</td><td>No linked receipt — recover it before relying on the inventory</td></tr>
   </table></div>
   <p>Disposals and write-offs are <strong>declared by the user, never assumed</strong>.</p>
 </section>
@@ -192,7 +192,7 @@
 
 <section>
   <h2>🎬 Demo video</h2>
-  <p>The ≤ 3-minute demo attached to the PR walks through: the problem (the inventory your insurer demands and nobody has) → the scan → the register with linked receipts → the "it was all already there" moment → the dashboard and the insurance inventory. It runs live on a real production account.</p>
+  <p>The ≤ 3-minute demo attached to the PR walks through: the problem (the inventory your insurer demands and nobody has) → the scan → the register with linked receipts → the "it was all already there" moment → the report and the insurance inventory. It runs live on a real production account.</p>
 </section>
 
 <section>
@@ -203,7 +203,7 @@
     <tr><td>Disposal detection from incoming credits (resale)</td><td>Medium</td><td>Always proposed for confirmation, never assumed</td></tr>
     <tr><td>Reconciliation with a physical inventory (photos, asset tags)</td><td>Medium</td><td>Makes the insurance inventory defensible</td></tr>
     <tr><td>End-of-depreciation alerts (renewal budgeting)</td><td>Low</td><td>Reuses the end-of-life dates already computed</td></tr>
-    <tr><td>CSV export for the accounting firm</td><td>Low</td><td>Alongside <code>qonto-accountant-handoff</code></td></tr>
+    <tr><td>CSV export for the accounting firm</td><td>Low</td><td>Format to define with the accounting firm</td></tr>
   </table></div>
 </section>
 
