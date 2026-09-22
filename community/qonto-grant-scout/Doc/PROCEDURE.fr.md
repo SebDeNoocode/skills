@@ -46,7 +46,6 @@
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Tableaux markdown : profil + signaux, shortlist sourcée et datée, limites | **Toujours** — c'est la base |
-| **Grant radar** | Fichier/artifact **HTML** : signaux × familles d'aides, pistes aux intersections, tags 🟢🟡🔵 | Si l'hôte affiche les fichiers ; sinon repli automatique sur les tableaux |
 | **Fiche par piste** | Bloc texte prêt à envoyer : signal, dispositif, critères à confirmer, source | Sur demande, pour chaque piste retenue |
 
 ## 5️⃣ Dépannage (erreurs connues et vérifiées)
@@ -54,7 +53,6 @@
 | Symptôme | Cause | Solution |
 |---|---|---|
 | `list_transactions` échoue d'entrée | `bank_account_id`/`iban` manquant | Le skill appelle **toujours** `get_organization` d'abord |
-| `403 missing oauth scope` sur `list_cash_flow_categories` | Hors périmètre du connecteur claude.ai | Normal — le skill utilise les labels (`list_labels`) à la place |
 | Réponses énormes / tronquées | Pagination trop large | Le skill pagine `per_page` ≤ 50 partout |
 | « Je ne trouve pas de dataset d'aides » | Référentiel indisponible ou renommé sur data.gouv.fr | Le skill élargit la recherche, puis bascule en mode dégradé (familles d'aides + portails officiels) en le disant |
 | `query_resource_data` échoue sur une ressource | Ressource non tabulaire (PDF, CSV cassé) | La piste devient un lien sourcé vers la page du dataset — annoncé comme tel |
