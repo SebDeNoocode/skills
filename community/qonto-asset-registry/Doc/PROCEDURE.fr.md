@@ -24,15 +24,14 @@ Il travaille avec ce que ton compte contient déjà — transactions, factures f
 
 | # | Action | Résultat |
 |---|---|---|
-| 1 | Dire à Claude : « **Quel matériel possède mon entreprise ?** » | Scan 24-36 mois → registre trié par catégorie/valeur, statuts ✅ 💰 ❓ 🔁, colonne 📎 |
+| 1 | Dire à Claude : « **Utilise mes transactions Qonto pour construire mon registre des immobilisations.** » | Scan 24-36 mois → registre trié par catégorie/valeur, statuts ✅ 💰 ❓ 🔁, colonne 📎 |
 | 2 | Passer les lignes « ❓ à confirmer » (marchands généralistes) | Tu confirmes ou reclasses en une phrase — rien n'est deviné |
 | 3 | « **Montre les amortissements indicatifs** » | Durée usuelle, dotation annuelle, valeur nette comptable estimée — à valider par l'expert-comptable |
 | 4 | « **Génère l'inventaire assurance** » | Tableau prêt à transmettre : description, date, valeur d'achat, justificatif |
-| 5 | Pour les 📎 manquants : enchaîner avec `qonto-receipt-hunter` | Les pièces sont récupérées avant d'en avoir besoin |
 
 ## 3️⃣ Prompts à copier-coller
 
-- « **Quel matériel possède mon entreprise ? Construis le registre des immobilisations.** »
+- « **Utilise mes transactions Qonto pour construire mon registre des immobilisations.** »
 - « **Utilise un seuil de 800 € au lieu de 500 €.** » (seuil configurable)
 - « **Quels équipements n'ont pas de justificatif lié ?** »
 - « **Génère l'inventaire assurance, prêt à envoyer à mon assureur.** »
@@ -55,7 +54,7 @@ Il travaille avec ce que ton compte contient déjà — transactions, factures f
 | Un achat carte introuvable à la date de la facture | Délai de règlement carte (1-2 jours) | Rapprocher par `emitted_at`, pas `settled_at` — géré |
 | Le même équipement apparaît 3 fois | Paiement en plusieurs fois | Mensualités rapprochées en **un seul** actif à sa valeur totale |
 | Une ligne reste « ❓ à confirmer » | Marchand généraliste, libellé muet | Ouvrir le justificatif (`get_attachment`) ou préciser la nature en une phrase |
-| Ligne 📎 justificatif manquant | Pièce jamais jointe à la transaction | Enchaîner avec `qonto-receipt-hunter` pour la récupérer |
+| Ligne 📎 justificatif manquant | Pièce jamais jointe à la transaction | La récupérer et la joindre dans Qonto avant de se fier à l'inventaire |
 | Du matériel en leasing compté dans le total | — | N'arrive pas : mensualités récurrentes chez un financeur → « 🔁 financé, pas immobilisé ici », exclu du total |
 | Pas de seuil 500 € proposé | Organisation hors France | Normal — mécanique universelle, mais le seuil et les durées sont la pratique française ; le registre reste complet |
 

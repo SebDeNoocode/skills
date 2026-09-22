@@ -1,6 +1,6 @@
 ---
 name: qonto-asset-registry
-description: Fixed-asset register and insurance inventory built straight from a Qonto account. Scans 24–36 months of transactions and supplier invoices, recognizes equipment purchases (IT, furniture, machines, vehicles, tools, phones) from vendor names and invoice labels, applies the €500 pre-tax threshold (French practice, configurable), links each asset to its transaction receipt, computes indicative straight-line depreciation, and produces the insurance inventory nobody keeps up to date. 100% read-only. Use for "what equipment does my company own?", "build my asset register", "fais mon registre des immobilisations", "I need an inventory for my insurer", "how much is my hardware worth today?", "prépare l'inventaire assurance".
+description: Fixed-asset register and insurance inventory built from Qonto account data. Scans 24–36 months of Qonto transactions and supplier invoices, recognizes equipment purchases (IT, furniture, machines, vehicles, tools, phones), applies the €500 pre-tax threshold (French practice, configurable), links each asset to its transaction receipt, computes indicative straight-line depreciation, and produces an insurance inventory. 100% read-only. Use only when the user asks to analyze their Qonto account for an asset register, equipment inventory, insurance inventory, or hardware valuation. Do not use for general inventory or accounting questions that do not require Qonto account analysis.
 permissions:
   mcp:
     qonto: [get_attachment, get_organization, list_supplier_invoices, list_transaction_attachments, list_transactions]
@@ -34,7 +34,7 @@ Use Claude's world knowledge of vendors and invoice labels to classify purchases
 French tax tolerance: below **€500 pre-tax** → expense; at or above → **fixed asset**. The user can change the threshold ("use €800"). Each line gets a status: ✅ fixed asset · 💰 expensed (< threshold) · ❓ to confirm · 🔁 financed (leasing). Non-French organization → skip this classification, keep the raw register.
 
 ### 4. Link the receipts
-For each asset's transaction: `list_transaction_attachments` → if present, `get_attachment` for the URL (probative value: file name, size). Missing → mark the line **📎 missing** and point to **qonto-receipt-hunter** to recover the document before it's needed. Compute a **receipt-completeness gauge** (assets with receipt / total).
+For each asset's transaction: `list_transaction_attachments` → if present, `get_attachment` for the URL (probative value: file name, size). Missing → mark the line **📎 missing**. Compute a **receipt-completeness gauge** (assets with receipt / total).
 
 ### 5. Indicative depreciation
 Straight-line over usual French useful lives: **IT & telephony 3 years · tools 5 · machines 5–10 · vehicles 4–5 · furniture 10**. For each asset: annual charge, estimated **net book value** today, end-of-life date. Frame it every time: these are **customary indications, not accounting entries** — the accountant makes the final call (durations, pro rata, actual entries). Disposals/write-offs are **declared by the user, never assumed**: a sold laptop stays listed until the user says so.
@@ -45,8 +45,6 @@ Straight-line over usual French useful lives: **IT & telephony 3 years · tools 
 2. **Indicative depreciation** table: asset · life · annual charge · estimated net book value (with the accountant caveat).
 3. **Insurance inventory** — the document the insurer asks for after a theft or a claim: description, purchase date, purchase value, receipt reference. Ready to send.
 4. Summary line: N assets · total purchase value · receipt gauge · items to confirm.
-
-To hand the register to the accounting firm, chain with **qonto-accountant-handoff**.
 
 ## Guardrails
 - **100% read-only**: never call any write tool, ever. No category changes, no uploads, no requests.

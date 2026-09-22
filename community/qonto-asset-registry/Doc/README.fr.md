@@ -22,7 +22,7 @@ Personne ne tient le registre des immobilisations. Et le jour du vol ou du sinis
 | Pays | **Mécanique universelle.** Le seuil 500 € HT et les durées d'amortissement sont la pratique **française** ; autres pays Qonto (DE, ES, IT…) → registre et inventaire assurance sans suggestion fiscale, annoncé clairement | ℹ️ détecté |
 | MCP Qonto connecté | Connecteur officiel (claude.ai / Claude Desktop), login OAuth | ✅ |
 | Historique 24-36 mois | En dessous, le registre est présenté comme partiel, période couverte annoncée | ⭕ |
-| Justificatifs joints aux transactions | Plus il y en a, plus l'inventaire est solide ; les manquants sont listés 📎 (renvoi vers `qonto-receipt-hunter`) | ⭕ |
+| Justificatifs joints aux transactions | Plus il y en a, plus l'inventaire est solide ; les manquants sont listés 📎 | ⭕ |
 
 ## ⚙️ Fonctionnement global
 
@@ -31,9 +31,9 @@ Personne ne tient le registre des immobilisations. Et le jour du vol ou du sinis
 1. **Scan des achats** (24-36 mois, débits, pagination ≤ 50, fenêtres de 3 mois) + `list_supplier_invoices` — les libellés de factures fournisseurs sont souvent plus propres que ceux des transactions, rapprochés par montant et date. Achats carte datés par `emitted_at` (le règlement traîne 1-2 jours)
 2. **Reconnaissance des équipements** par la culture générale de Claude, **dès la première occurrence** — pas besoin de récurrence pour reconnaître un revendeur informatique ou un fournisseur de mobilier. Marchand généraliste ambigu → ligne « ❓ à confirmer », jamais devinée. Paiements en plusieurs fois rapprochés en un seul actif
 3. **Seuil des 500 € HT** (configurable) : charge ou immobilisation ; leasing/LOA (mensualités récurrentes chez un financeur) signalé « 🔁 financé, pas immobilisé ici »
-4. **Justificatifs liés** : `list_transaction_attachments` + `get_attachment` par actif ; manquant → 📎 avec renvoi vers `qonto-receipt-hunter` ; jauge de complétude calculée
+4. **Justificatifs liés** : `list_transaction_attachments` + `get_attachment` par actif ; manquant → 📎 ; jauge de complétude calculée
 5. **Amortissements indicatifs** : durées usuelles (tableau ci-dessous), linéaire, valeur nette comptable estimée, date de fin — des usages, pas des écritures comptables
-6. **Registre + inventaire assurance** : tableaux markdown dans la conversation, avec transmission optionnelle au cabinet via `qonto-accountant-handoff`
+6. **Registre + inventaire assurance** : tableaux markdown dans la conversation
 
 ## 🏗 Schéma fonctionnel
 
@@ -63,7 +63,7 @@ Chaque ligne du registre porte un statut : ✅ immobilisation · 💰 charge (< 
 
 ## 🎬 Vidéo de démo
 
-La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (l'inventaire que l'assureur exige et que personne n'a) → le scan → le registre avec justificatifs liés → le moment « tout est déjà là » → dashboard et inventaire assurance. Le script détaillé de tournage est conservé en interne (hors dépôt).
+La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (l'inventaire que l'assureur exige et que personne n'a) → le scan → le registre avec justificatifs liés → le moment « tout est déjà là » → rapport et inventaire assurance. Le script détaillé de tournage est conservé en interne (hors dépôt).
 
 ## 💡 Améliorations possibles (dans les clous du hackathon)
 
@@ -73,7 +73,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (l'inventai
 | Détection des cessions par crédit entrant (revente de matériel) proposée à confirmation | Moyen | Toujours confirmé par l'utilisateur, jamais supposé |
 | Rapprochement avec un inventaire physique (photos, étiquettes) | Moyen | L'inventaire assurance devient opposable |
 | Alerte de fin d'amortissement (renouvellement à budgéter) | Faible | Réutilise les dates de fin déjà calculées |
-| Export CSV pour le cabinet comptable | Faible | En complément de `qonto-accountant-handoff` |
+| Export CSV pour le cabinet comptable | Faible | Format à définir avec le cabinet |
 
 ## 🛡 Garde-fous
 
@@ -84,4 +84,4 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (l'inventai
 
 ---
 
-*Documentation FR (pilotage). Version jury : `README.en.md`. Livrable PR : `SKILL.md`. Procédure pas-à-pas : `docs/PROCEDURE.fr.md`. Docs riches : `docs/doc-qonto-asset-registry.fr.html` · `docs/doc-qonto-asset-registry.fr.docx`.*
+*Documentation FR (pilotage). Version jury : `README.en.md`. Livrable PR : `SKILL.md`. Procédure pas-à-pas : `Doc/PROCEDURE.fr.md`. Documentation HTML : `Doc/doc-qonto-asset-registry.fr.html`.*

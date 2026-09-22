@@ -1,11 +1,11 @@
 # 💬 Example prompts — qonto-asset-registry
 
-Invoke with `/qonto-asset-registry <your request>` — or just ask in plain language: the skill's description triggers it automatically.
+Invoke with `/qonto-asset-registry <your request>`, or explicitly ask to analyze Qonto account data for an asset or insurance inventory. General inventory or accounting questions do not trigger this skill.
 
 ## Getting started
 
-- "What equipment does my company own? Build the asset register."
-- "I need an inventory for my insurer."
+- "Use my Qonto transactions to build my company's asset register."
+- "Build an insurance inventory from my Qonto account."
 
 ## Going further
 
@@ -16,8 +16,3 @@ Invoke with `/qonto-asset-registry <your request>` — or just ask in plain lang
 - "That purchase at a generalist store was actually a standing desk — reclassify it."
 - "I sold that old laptop — take it off the register."
 - "Generate the insurance inventory, ready to send: description, date, purchase value, receipt."
-
-## Chain it
-
-- "For the assets missing receipts, recover them with qonto-receipt-hunter."
-- "Package the register and depreciation table for my accountant with qonto-accountant-handoff."

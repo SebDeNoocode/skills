@@ -24,7 +24,7 @@ Would someone use this on a Monday morning? Ask anyone who just got the insurer'
 | Country | **Universal mechanics.** The €500 threshold and the depreciation lives are **French** practice; other Qonto countries (DE, ES, IT…) → register and insurance inventory without local tax suggestions, stated plainly | ℹ️ detected |
 | Qonto MCP connected | Official connector (claude.ai / Claude Desktop), OAuth login | ✅ |
 | 24–36 months of history | Below that, the register is presented as partial, with the covered period stated | ⭕ |
-| Receipts attached to transactions | The more there are, the stronger the inventory; missing ones are listed 📎 (pointer to `qonto-receipt-hunter`) | ⭕ |
+| Receipts attached to transactions | The more there are, the stronger the inventory; missing ones are listed 📎 | ⭕ |
 
 ## ⚙️ How it works
 
@@ -33,9 +33,9 @@ Would someone use this on a Monday morning? Ask anyone who just got the insurer'
 1. **Scan the purchases** (24–36 months, debits, pagination ≤ 50, 3-month windows) + `list_supplier_invoices` — supplier-invoice descriptions are often cleaner than transaction labels, matched by amount and date. Card purchases dated by `emitted_at` (settlement lags 1–2 days)
 2. **Recognize the equipment** with Claude's world knowledge, **from the first occurrence** — no recurrence needed to spot a computer reseller or an office-furniture supplier. Ambiguous generalist merchant → line marked "❓ to confirm", never guessed. Installment purchases merged into a single asset
 3. **Apply the €500 pre-tax threshold** (configurable): expense or fixed asset; leasing (recurring monthly payments to a financing company) flagged "🔁 financed, not capitalized here"
-4. **Link the receipts**: `list_transaction_attachments` + `get_attachment` per asset; missing → 📎 with a pointer to `qonto-receipt-hunter`; completeness gauge computed
+4. **Link the receipts**: `list_transaction_attachments` + `get_attachment` per asset; missing → 📎; completeness gauge computed
 5. **Indicative depreciation**: usual lives (IT & phones 3 years, tools 5, machines 5–10, vehicles 4–5, furniture 10), straight-line, estimated net book value, end-of-life date — customs, not accounting entries
-6. **Register + insurance inventory**: markdown tables in the conversation, with optional handoff to the accounting firm via `qonto-accountant-handoff`
+6. **Register + insurance inventory**: markdown tables in the conversation
 
 ## 🏗 Functional diagram
 
@@ -49,7 +49,7 @@ Would someone use this on a Monday morning? Ask anyone who just got the insurer'
 - Purchase at a generalist marketplace? → "to confirm", with the attached receipt opened when available — never guessed
 - Equipment paid in installments? → merged into one asset at full value, not three half-assets
 - Leased hardware? → detected via recurring payments to a financer, flagged and excluded from the total
-- No receipt attached? → line flagged 📎 with the count disclosed, and `qonto-receipt-hunter` suggested to recover them
+- No receipt attached? → line flagged 📎 with the count disclosed
 - Non-French organization? → the register and the insurance inventory still work; the skill just skips the French threshold and lives, and says so
 
 ## 📤 Output formats (where does the register land?)
@@ -61,7 +61,7 @@ Would someone use this on a Monday morning? Ask anyone who just got the insurer'
 
 ## 🎬 Demo video
 
-The ≤ 3-minute demo attached to the PR walks through: the problem (the inventory your insurer demands and nobody has) → the scan → the register with linked receipts → the "it was all already there" moment → the dashboard and the insurance inventory. It runs live on a real production account.
+The ≤ 3-minute demo attached to the PR walks through: the problem (the inventory your insurer demands and nobody has) → the scan → the register with linked receipts → the "it was all already there" moment → the report and the insurance inventory. It runs live on a real production account.
 
 ## 💡 Roadmap ideas
 
@@ -69,7 +69,7 @@ The ≤ 3-minute demo attached to the PR walks through: the problem (the invento
 - Disposal detection from incoming credits (equipment resale), always proposed for confirmation
 - Reconciliation with a physical inventory (photos, asset tags)
 - End-of-depreciation alerts (renewal budgeting)
-- CSV export for the accounting firm, alongside `qonto-accountant-handoff`
+- CSV export for the accounting firm
 
 ## 🛡 Guardrails
 
@@ -80,4 +80,4 @@ The ≤ 3-minute demo attached to the PR walks through: the problem (the invento
 
 ---
 
-*Submission docs: `SKILL.md` (the skill itself) · step-by-step guide: `docs/PROCEDURE.en.md` · rich docs in `docs/` (HTML & DOCX, FR/EN).*
+*Submission docs: `SKILL.md` (the skill itself) · step-by-step guide: `Doc/PROCEDURE.en.md` · rich HTML docs in `Doc/` (FR/EN).*

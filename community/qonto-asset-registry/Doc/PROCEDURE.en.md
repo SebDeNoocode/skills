@@ -24,15 +24,14 @@ It works with what your account already contains — transactions, supplier invo
 
 | # | Action | Result |
 |---|---|---|
-| 1 | Tell Claude: "**What equipment does my company own?**" | 24–36 month scan → register sorted by category/value, statuses ✅ 💰 ❓ 🔁, 📎 column |
+| 1 | Tell Claude: "**Use my Qonto transactions to build my asset register.**" | 24–36 month scan → register sorted by category/value, statuses ✅ 💰 ❓ 🔁, 📎 column |
 | 2 | Review the "❓ to confirm" lines (generalist merchants) | You confirm or reclassify in one sentence — nothing is guessed |
 | 3 | "**Show the indicative depreciation**" | Usual life, annual charge, estimated net book value — for your accountant to validate |
 | 4 | "**Generate the insurance inventory**" | Ready-to-send table: description, date, purchase value, receipt |
-| 5 | For the missing 📎: chain with `qonto-receipt-hunter` | Receipts recovered before you ever need them |
 
 ## 3️⃣ Copy-paste prompts
 
-- "**What equipment does my company own? Build the asset register.**"
+- "**Use my Qonto transactions to build my asset register.**"
 - "**Use an €800 threshold instead of €500.**" (threshold is configurable)
 - "**Which assets have no linked receipt?**"
 - "**Generate the insurance inventory, ready to send to my insurer.**"
@@ -55,7 +54,7 @@ It works with what your account already contains — transactions, supplier invo
 | A card purchase can't be found at the invoice date | Card settlement delay (1–2 days) | Match by `emitted_at`, not `settled_at` — handled |
 | The same asset shows up 3 times | Installment payments | Installments merged into **one** asset at full value |
 | A line stays "❓ to confirm" | Generalist merchant, mute label | Open the receipt (`get_attachment`) or state the nature in one sentence |
-| 📎 missing receipt on a line | No attachment on the transaction | Chain with `qonto-receipt-hunter` to recover it |
+| 📎 missing receipt on a line | No attachment on the transaction | Recover and attach it in Qonto before relying on the inventory |
 | Leased hardware counted in the total | — | Doesn't happen: recurring payments to a financer → "🔁 financed, not capitalized here", excluded from totals |
 | No €500 threshold proposed | Non-French organization | Expected — the mechanics are universal, but the threshold and lives are French practice; the register stays complete |
 
