@@ -3,6 +3,8 @@ name: qonto-crm-truth
 description: CRM reality check for Qonto accounts. Reconciles CRM records (HubSpot or Airtable) with actual bank activity — flags "closed-won" deals that never generated cash, computes real revenue per client, LTV, observed average payment delay and an A/B/C payer reliability score, then, after an always-confirmed entity matching and an explicit go, writes those truths back into the CRM (HubSpot custom properties / Airtable columns). Use for "which won deals were never paid?", "quels deals gagnés n'ont jamais été encaissés ?", "score my clients by how they actually pay", "sync real revenue into my CRM", "mon top client CRM est-il vraiment mon top payeur ?".
 permissions:
   mcp:
+    airtable: [search_bases, get_table_schema, create_field, update_records_for_table]
+    hubspot: [get_companies, get_deals, update_company_properties]
     qonto: [get_client, get_organization, list_client_invoices, list_clients, list_credit_notes, list_quotes, list_transactions]
   network: []
   env: []
