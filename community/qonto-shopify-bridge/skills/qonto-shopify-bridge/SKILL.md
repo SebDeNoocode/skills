@@ -4,6 +4,8 @@ description: E-commerce payout reconciliation for Qonto accounts. Matches Shopif
 permissions:
   mcp:
     qonto: [get_organization, get_statement, list_cash_flow_categories, list_statements, list_transactions]
+    shopify: [get-order, list-orders, run-analytics-query]
+    stripe: [list_payouts, list_charges]
   network: []
   env: []
   tools: [Read]
