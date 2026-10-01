@@ -6,7 +6,7 @@ permissions:
     qonto: [get_client, get_organization, list_client_invoices, list_clients, list_transactions]
   network: []
   env: []
-  tools: [Read]
+  tools: [Read, Write]
 ---
 
 # Qonto Prescription Guard
