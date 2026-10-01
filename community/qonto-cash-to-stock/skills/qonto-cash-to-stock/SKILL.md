@@ -4,6 +4,7 @@ description: Cash-constrained restocking copilot for e-commerce on Qonto. The re
 permissions:
   mcp:
     qonto: [create_multi_transfer_request, decline_request, get_organization, list_products, list_supplier_invoices, list_transactions]
+    shopify: [run-analytics-query, get-inventory-levels]
   network: []
   env: []
   tools: [Read]
