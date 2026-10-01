@@ -4,6 +4,7 @@ description: EU e-commerce VAT navigator (OSS One-Stop Shop) for Qonto accounts.
 permissions:
   mcp:
     qonto: [create_multi_transfer_request, decline_request, get_organization, list_cash_flow_categories, list_client_invoices, list_transactions]
+    shopify: [list-orders, run-analytics-query]
   network: []
   env: []
   tools: [Read]
