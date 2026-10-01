@@ -4,6 +4,9 @@ description: Infrastructure unit-economics radar for SaaS and tech founders on Q
 permissions:
   mcp:
     qonto: [get_organization, list_cash_flow_categories, list_supplier_invoices, list_transactions]
+    sentry: [search_issues]
+    supabase: [list_projects, execute_sql]
+    vercel: [list_projects, list_deployments]
   network: []
   env: []
   tools: [Read]
