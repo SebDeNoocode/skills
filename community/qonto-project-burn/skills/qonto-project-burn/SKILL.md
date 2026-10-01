@@ -3,6 +3,8 @@ name: qonto-project-burn
 description: Project-level burn tracker that bridges Qonto and the team's tracker. Maps Qonto labels to projects, computes each project's real spend (dedicated SaaS, freelancers, ads, hardware) against its declared budget, projects the overrun date at the current run rate, and — with explicit consent — posts the status where the team lives, as a Linear/Jira comment plus an alert issue when a threshold is crossed. Use for "what did project Alpha actually cost?", "combien a coûté le projet X ?", "are we over budget?", "post the burn status to Linear", "which project burns fastest?".
 permissions:
   mcp:
+    jira: [add_comment, create_issue]
+    linear: [create_comment, create_issue]
     qonto: [get_organization, get_subscription, list_cash_flow_categories, list_client_invoices, list_labels, list_transactions, modify_transaction_cash_flow_category]
   network: []
   env: []
@@ -11,7 +13,7 @@ permissions:
 
 # Qonto Project Burn
 
-Teams plan in Linear or Jira; the money lives in Qonto. Nobody knows what project X really cost. This skill maps **Qonto labels ↔ projects**, computes real burn vs declared budget, projects the overrun date — and brings the answer to the team's tracker instead of asking the team to open the bank. Qonto side: read-only. The notable write lives in Linear/Jira, always previewed and confirmed.
+Teams plan in Linear or Jira; the money lives in Qonto. Nobody knows what project X really cost. This skill maps **Qonto labels ↔ projects**, computes real burn vs declared budget, projects the overrun date — and brings the answer to the team's tracker instead of asking the team to open the bank. Qonto side: read, plus one write (`modify_transaction_cash_flow_category`) to categorize orphan transactions. The notable write lives in Linear/Jira, always previewed and confirmed.
 
 ## Prerequisites
 1. `get_organization` **first** → accounts, currency, `bank_account_id` (required by `list_transactions`). Nothing hardcoded; adapts to any organization.
