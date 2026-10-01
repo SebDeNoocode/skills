@@ -4,9 +4,9 @@ description: "Court-ready payment-order file builder for Qonto accounts (France)
 permissions:
   mcp:
     qonto: [get_attachment, get_client, get_client_invoice, get_organization, list_client_invoices, list_transactions]
-  network: []
+  network: [recherche-entreprises.api.gouv.fr, bodacc-datadila.opendatasoft.com]
   env: []
-  tools: [Read]
+  tools: [Read, WebFetch]
 ---
 
 # Qonto Injonction
