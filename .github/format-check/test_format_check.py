@@ -268,6 +268,40 @@ class LayoutTests(unittest.TestCase):
         self.assertTrue(any(f.level == "fail" and "mixes a root" in f.message for f in report.findings))
 
 
+class GeneratedFileTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.old_root = fc.ROOT
+        fc.ROOT = self.root
+        script = self.root / ".github" / "scripts" / "marketplace.py"
+        script.parent.mkdir(parents=True)
+        script.write_text((HERE.parent / "scripts" / "marketplace.py").read_text())
+        manifest = self.root / "community" / "plugin" / ".claude-plugin" / "plugin.json"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(json.dumps({"name": "plugin", "version": "0.1.0", "description": "A plugin."}))
+        for path, text in zip(fc.GENERATED_FILES, fc.load_marketplace().render()):
+            (self.root / path).parent.mkdir(parents=True, exist_ok=True)
+            (self.root / path).write_text(text)
+
+    def tearDown(self):
+        fc.ROOT = self.old_root
+        self.temp.cleanup()
+
+    def check(self):
+        report = fc.Report()
+        fc.check_repo_level(list(fc.GENERATED_FILES), "github-actions[bot]", "base", report)
+        return report
+
+    def test_regenerated_manifests_pass_for_any_author(self):
+        self.assertFalse(self.check().failed)
+
+    def test_hand_edited_manifest_is_still_protected(self):
+        (self.root / fc.GENERATED_FILES[0]).write_text("{}\n")
+        report = self.check()
+        self.assertEqual([f.file for f in report.findings if f.check == "protected-path"], [fc.GENERATED_FILES[0]])
+
+
 class GitPathTests(unittest.TestCase):
     def test_changed_files_uses_nul_delimited_paths(self):
         output = "community/caf\N{LATIN SMALL LETTER E WITH ACUTE}/SKILL.md\0community/acme/file\nname.md\0".encode()

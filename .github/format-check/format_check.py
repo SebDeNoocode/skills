@@ -80,6 +80,9 @@ SKILL_MD_FAIL_LINES = 1000
 # Paths only maintainers may touch (catalogue, manifests, workflows, this check, the featured tier).
 PROTECTED_PREFIXES = (".github/", ".claude-plugin/", ".codex-plugin/", ".agents/", "featured/")
 PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS"}
+# Rendered by .github/scripts/marketplace.py. Any author may change them as long as they match that rendering: the
+# marketplace workflow proposes them in a pull request opened as github-actions[bot], which is not a maintainer.
+GENERATED_FILES = (".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json")
 
 # Install commands are tokenised rather than regex-matched so flags (`npm i -D x`, `pip install -U x`) cannot hide
 # the package, several packages on one line are all checked, and `pkg@latest` counts as unpinned.
@@ -230,6 +233,8 @@ def check_repo_level(files: list[str], actor: str, base: str, rep: Report) -> se
         parts = f.split("/")
         if f.startswith(PROTECTED_PREFIXES) or f in PROTECTED_FILES:
             if not is_maintainer:
+                if f in GENERATED_FILES and f in generated_up_to_date():
+                    continue
                 rep.add("fail", "protected-path",
                         f"`{f}` is maintained by the Qonto team and cannot change in a skill submission.",
                         file=f, fix=f"Remove this file from the pull request. Contributions go under `{CONTRIB_ROOT}/`.")
@@ -883,19 +888,37 @@ def check_component_configs(pdir: Path, rep: Report):
                         fix="Remove the local `command` server. Use a declared HTTPS server, or keep it outside the plugin.")
 
 
+def load_marketplace():
+    """`.github/scripts/marketplace.py` as a module, None when the repository has none."""
+    script = ROOT / ".github" / "scripts" / "marketplace.py"
+    if not script.is_file():
+        return None
+    sys.dont_write_bytecode = True   # no __pycache__ left behind in the contributor's checkout
+    spec = importlib.util.spec_from_file_location("marketplace", script)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def generated_up_to_date() -> set[str]:
+    """The generated files whose committed content is exactly what marketplace.py renders from the plugin directories."""
+    try:
+        mod = load_marketplace()
+        rendered = mod.render()[:2] if mod else ()
+    except Exception:
+        return set()
+    return {f for f, want in zip(GENERATED_FILES, rendered) if (ROOT / f).is_file() and read_text(ROOT / f) == want}
+
+
 def check_manifest(rep: Report):
     """Validate the marketplace the merge would produce: render it from the plugin directories with
     `.github/scripts/marketplace.py`, refuse duplicate plugin names, then run `claude plugin validate` on that
     rendering (written in place for the run, the validator does not follow symlinks, and restored afterwards)."""
-    script = ROOT / ".github" / "scripts" / "marketplace.py"
-    if not script.is_file():
-        rep.add("note", "manifest", "No `.github/scripts/marketplace.py`, manifest validation skipped.")
-        return
     try:
-        sys.dont_write_bytecode = True   # no __pycache__ left behind in the contributor's checkout
-        spec = importlib.util.spec_from_file_location("marketplace", script)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        mod = load_marketplace()
+        if mod is None:
+            rep.add("note", "manifest", "No `.github/scripts/marketplace.py`, manifest validation skipped.")
+            return
         found = mod.plugins()
         rendered = mod.render()[0]
     except Exception as e:   # a broken plugin.json is already a `layout` failure from check_plugin_manifest
