@@ -1,6 +1,6 @@
 # Regenerates the marketplace manifests and the README table from the plugin directories after every merge to
-# main, and validates the result before committing it. Contributors never edit .claude-plugin/marketplace.json,
-# .agents/plugins/marketplace.json or the table in README.md.
+# main, validates the result, and proposes it in a pull request, since the main ruleset refuses a direct push.
+# Contributors never edit .claude-plugin/marketplace.json, .agents/plugins/marketplace.json or the table in README.md.
 name: marketplace
 
 on:
@@ -13,7 +13,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: write        # push the regeneration branch
+  pull-requests: write   # open or close its pull request
+  actions: write         # dispatch the format check on it
 
 concurrency:
   group: marketplace
@@ -48,13 +50,31 @@ jobs:
           npm install --global --no-fund --no-audit @anthropic-ai/claude-code@2.1.269
           claude plugin validate . --strict
 
-      - name: Commit them when they changed
+      - name: Open or update the regeneration pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: marketplace/regenerate
+        # A pull request opened with GITHUB_TOKEN starts no pull_request run, so the format check is dispatched on
+        # the branch. A maintainer approves and merges; the next merge to main rebuilds the branch from scratch.
         run: |
-          if git diff --quiet -- .claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md; then
-            echo "manifests already up to date"; exit 0
+          files=(.claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md)
+          pr=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
+          if git diff --quiet -- "${files[@]}"; then
+            echo "manifests already up to date"
+            if [ -n "$pr" ]; then
+              gh pr close "$pr" --delete-branch --comment "Main already has these manifests, nothing to regenerate."
+            fi
+            exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md
-          git commit -m "Regenerate the marketplace manifests"
-          git push
+          git switch -c "$BRANCH"
+          git add "${files[@]}"
+          git commit -m "chore(marketplace): regenerate the manifests"
+          git push --force origin "$BRANCH"
+          if [ -z "$pr" ]; then
+            url=$(gh pr create --base main --head "$BRANCH" --title "chore(marketplace): regenerate the manifests" \
+              --body "Rendered by \`.github/scripts/marketplace.py\` from the plugin directories on main at ${GITHUB_SHA}. Review the diff and merge, and the new plugins become installable.")
+            pr=${url##*/}
+          fi
+          gh workflow run format-check.yml --ref "$BRANCH" -f pr="$pr"

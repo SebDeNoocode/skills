@@ -7,12 +7,19 @@ name: format check
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  # The marketplace workflow opens its regeneration pull request with GITHUB_TOKEN, which starts no pull_request
+  # run, so it dispatches this workflow on that pull request's branch instead.
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Number of the pull request whose branch is checked
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: format-check-${{ github.event.pull_request.number }}
+  group: format-check-${{ github.event.pull_request.number || inputs.pr }}
   cancel-in-progress: true
 
 jobs:
@@ -42,19 +49,21 @@ jobs:
       - name: Run the format check
         id: format
         env:
-          FORMAT_CHECK_ACTOR: ${{ github.event.pull_request.user.login }}
+          FORMAT_CHECK_ACTOR: ${{ github.event.pull_request.user.login || github.actor }}
+          BASE: ${{ github.event.pull_request.base.sha || 'origin/main' }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
         # stdout stays connected: the `::error` annotations the checker prints are read from it
         run: |
           set +e
           python3 .github/format-check/format_check.py \
-            --base "${{ github.event.pull_request.base.sha }}" \
+            --base "$BASE" \
             --head HEAD \
             --annotations \
             --json format-check.json \
             --markdown format-check.md
           code=$?
           cat format-check.md >> "$GITHUB_STEP_SUMMARY"
-          echo "${{ github.event.pull_request.number }}" > pr-number.txt
+          echo "$PR_NUMBER" > pr-number.txt
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
