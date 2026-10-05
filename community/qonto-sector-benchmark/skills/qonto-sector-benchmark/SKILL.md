@@ -1,6 +1,6 @@
 ---
 name: qonto-sector-benchmark
-description: Sector health check-up for Qonto accounts. Computes the company's real ratios from transactions and invoices (fixed-cost share, software subscription weight, observed client payment delay, revenue seasonality, cash in days of expenses) and compares them against official French sector statistics (INSEE, via the Datagouv MCP when connected) — every figure carrying its source, vintage and NAF granularity. Falls back to a "you vs you a year ago" self-benchmark when sector data is unavailable. Use for "suis-je normal ?", "am I normal?", "how do I compare to my industry?", "do my clients pay me slower than average?", "am I paying too much for software?", "benchmark my company against my sector".
+description: Sector health check-up for Qonto accounts. Computes the company's real ratios from transactions and invoices (fixed-cost share, software subscription weight, observed client payment delay, revenue seasonality, cash in days of expenses) and compares them against official French sector statistics (INSEE, via the Datagouv MCP when connected) — every figure carrying its source, vintage and NAF granularity. Falls back to a "you vs you a year ago" self-benchmark when sector data is unavailable. Use for "benchmark my Qonto business against my sector", "compare my company's financial ratios to my industry", "do my Qonto clients pay slower than the sector average?", "compare my Qonto business ratios to last year", "compare les ratios de mon entreprise Qonto à mon secteur".
 permissions:
   mcp:
     datagouv: [get_dataset_info, query_resource_data, search_datasets]
@@ -13,6 +13,8 @@ permissions:
 # Qonto Sector Benchmark
 
 "Am I normal?" — the question every founder asks and never gets answered. 100 % read-only: the skill computes the company's real ratios from the Qonto account, then puts them next to official French sector statistics — with the source, vintage and granularity printed on every single comparison.
+
+Only activate for requests explicitly about company finances, Qonto ratios or sector benchmarking. A standalone "Am I normal?" / "Suis-je normal ?" without business context does not authorize reading Qonto data.
 
 ## Prerequisites
 1. `get_organization` → accounts, balances, country, legal identity and activity/NAF code. If the NAF code is not exposed, ask the user for it (it's on any KBIS/invoice) or infer it from the declared activity and **confirm before using it** — it drives the whole sector comparison.
