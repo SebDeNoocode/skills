@@ -69,7 +69,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : problème → balayage (
 | Idée | Effort | Note |
 |---|---|---|
 | Envoi de la réclamation via un MCP Gmail détecté dynamiquement | Faible | Multi-MCP optionnel — le cœur reste Qonto pur |
-| Marquage des factures litigieuses (`change_supplier_invoice_status`) | Moyen | Sortirait du 100 % lecture — à assumer comme option explicite |
+| Marquage des factures litigieuses (changement de statut) | Moyen | Sortirait du 100 % lecture — à assumer comme option explicite |
 | Détection post-résiliation (héritée de P10) : un abonnement qui continue après une résiliation annoncée | Moyen | Réutilise la détection de cadence |
 | Audit périodique programmé (trimestriel) avec diff vs le rapport précédent | Faible | La vigie IBAN devient un vrai monitoring |
 | Rapprochement multi-devises avec taux du jour | Moyen | Transforme les « à vérifier (change) » en verdicts |
