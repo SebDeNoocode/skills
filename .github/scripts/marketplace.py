@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -70,16 +71,20 @@ def codex_entry(tier: str, d: Path, m: dict) -> dict:
     }
 
 
+def summary(description: str) -> str:
+    """First sentence of a plugin description, for the README table."""
+    text = " ".join(str(description).split())
+    return re.split(r"(?<=[.!?])\s+(?=[A-Z])", text, maxsplit=1)[0].rstrip("…").strip()
+
+
 def readme_table(found: list[tuple[str, Path, dict]]) -> str:
-    rows = ["| Plugin | Skills | What it does | Author | Tier |", "|---|---|---|---|---|"]
+    rows = ["| Plugin | What it does | Author | Tier |", "|---|---|---|---|"]
     for tier, d, m in found:
-        sdir = d / "skills"
-        skills = ", ".join(f"`{s.name}`" for s in sorted(sdir.iterdir()) if s.is_dir()) if sdir.is_dir() else ""
         author = m.get("author")
         if isinstance(author, dict):
             author = f"[{author.get('name', '')}]({author['url']})" if author.get("url") else str(author.get("name", ""))
-        desc = " ".join(str(m.get("description", "")).split()).replace("|", "\\|")
-        rows.append(f"| [`{m['name']}`](./{tier}/{d.name}) | {skills} | {desc} | {author or ''} | {tier} |")
+        desc = summary(m.get("description", "")).replace("|", "\\|")
+        rows.append(f"| [`{m['name']}`](./{tier}/{d.name}) | {desc} | {author or ''} | {tier} |")
     return "\n".join(rows) + "\n"
 
 
@@ -101,7 +106,8 @@ def render() -> tuple[str, str, str | None]:
     codex = {
         "name": MARKETPLACE["name"],
         "interface": {"displayName": "Qonto"},
-        "plugins": [codex_entry(t, d, m) for t, d, m in found if (d / ".codex-plugin" / "plugin.json").is_file()],
+        # Codex reads .claude-plugin/plugin.json when a plugin has no .codex-plugin/plugin.json, so every plugin is listed.
+        "plugins": [codex_entry(t, d, m) for t, d, m in found],
     }
     return json.dumps(claude, indent=2) + "\n", json.dumps(codex, indent=2) + "\n", render_readme(found)
 
