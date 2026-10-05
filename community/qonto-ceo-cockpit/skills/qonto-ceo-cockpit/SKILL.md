@@ -6,7 +6,7 @@ permissions:
     qonto: [get_organization, list_cash_flow_categories, list_client_invoices, list_labels, list_supplier_invoices, list_transactions]
   network: []
   env: []
-  tools: [Read]
+  tools: [Read, Write]
 ---
 
 # Qonto CEO Cockpit
@@ -50,7 +50,7 @@ Generate a **single self-contained HTML file** (artifact on claude.ai, file in C
 - Constraints: inline CSS/JS only, **no external resource** (CDN, fonts, images — artifact CSP blocks them), bars/ribbons in pure CSS + inline SVG (no chart library), light/dark theme via `prefers-color-scheme`, brand palette violet `#6B4EFF` / dark `#1D1B29` / white.
 - Refresh on demand: re-running the prompt regenerates the file with fresh data.
 
-**Fallback** — when the host cannot render files: deliver the same content as structured markdown (KPI table, in/out flow tables month + year, 3-month forecast table, hypothesis math shown for 2–3 day-rate scenarios). Don't mention the HTML at all in that case.
+**Fallback** — when the host cannot render files: deliver the same content as structured markdown (KPI table, in/out flow tables month + year, 3-month forecast table, hypothesis math shown for 2–3 day-rate scenarios). Say the HTML file could not be rendered here.
 
 ## Cross-skill integration (optional, detected — never required)
 This cockpit is the natural final screen of the qonto skill family: if their outputs are available in the conversation, slot them in — `qonto-tax-pilot` → tax-vault gauge and tax deadlines, `qonto-subscription-guardian` → detailed subscriptions card, `qonto-invoice-chaser` → expected-receipts dates. Absent, the cockpit computes its own simpler versions from raw data.

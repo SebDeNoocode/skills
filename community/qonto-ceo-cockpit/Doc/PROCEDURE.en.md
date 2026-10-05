@@ -64,6 +64,6 @@
 ## 🔒 Security reminder
 
 The skill is **100 % read-only**: no transfer, no payment, nothing to approve.
-The dashboard is a **local** file — your data never leaves your machine, no external code loads.
+The dashboard is a **local** file — the file is generated locally and loads no external code.
 The eye toggle is a **presentation** convenience: the data stays in the file's source.
 To share, ask for the "presentation" regeneration — there, hidden lines are genuinely excluded.
