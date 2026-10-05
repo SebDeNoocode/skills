@@ -19,5 +19,3 @@ Invoke with `/qonto-rgpd-register <your request>` — or just ask in plain langu
 ## Chain it
 
 - "Export the register as a print-ready HTML document for my DPO to validate."
-- "Those ghost tools still charging me — audit them with qonto-subscription-audit."
-- "Check what else we know about these vendors with qonto-supplier-detective."
