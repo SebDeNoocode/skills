@@ -52,7 +52,7 @@ Sinon `list_requests` revient vide — et le skill te dira que c'est un problèm
 
 | Symptôme | Cause | Solution |
 |---|---|---|
-| Claude « refuse » d'approuver une demande | **Par conception** : `approve_request` n'est jamais utilisé par ce skill | Approuver dans l'app Qonto avec ta 2FA — c'est le modèle de sécurité |
+| Claude « refuse » d'approuver une demande | **Par conception** : l'action d'approbation n'est jamais utilisé par ce skill | Approuver dans l'app Qonto avec ta 2FA — c'est le modèle de sécurité |
 | Échec du refus d'une demande groupée | `decline_request` exige `request_type: "multi_transfers"` (au **pluriel**) | Géré par le skill |
 | Erreur sur `list_transactions` | `bank_account_id`/`iban` obligatoire | Le skill appelle `get_organization` d'abord, systématiquement |
 | `list_requests` revient vide | Aucune demande en attente **ou** rôle sans revue des demandes | Le skill dit lequel des deux ; vérifier son rôle dans Qonto si besoin |
@@ -62,6 +62,6 @@ Sinon `list_requests` revient vide — et le skill te dira que c'est un problèm
 
 ## 🔒 Rappel sécurité
 
-Le skill **ne peut pas** approuver ni déplacer d'argent : `approve_request` n'est jamais appelé.
+Le skill **ne peut pas** approuver ni déplacer d'argent : l'action d'approbation n'est jamais appelé.
 Sa seule écriture est le **refus motivé** (`decline_request`), toujours confirmé par toi dans la conversation.
 Les approbations se font dans l'app Qonto, avec **ta** 2FA — chaque brief cite ses preuves, tu décides en connaissance de cause.

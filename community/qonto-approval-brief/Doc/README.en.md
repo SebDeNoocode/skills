@@ -45,7 +45,7 @@ Would someone use this on a Monday morning? Monday morning is exactly when the w
 
 ![Functional diagram](assets/functional.en.png)
 
-**The security model** (not a limitation): solid arrows are risk-free reads; the dashed arrow is a **motivated decline only**, requiring explicit confirmation in the conversation. Approval doesn't exist in this skill: `approve_request` is **never** called. Approving = the Qonto app + your own SCA (2FA). Nothing this skill does can move a euro.
+**The security model** (not a limitation): solid arrows are risk-free reads; the dashed arrow is a **motivated decline only**, requiring explicit confirmation in the conversation. Approval doesn't exist in this skill: the approve action is **never** called. Approving = the Qonto app + your own SCA (2FA). Nothing this skill does can move a euro.
 
 ## 🧪 Holds up on messy data
 
@@ -90,7 +90,7 @@ The ≤ 3-minute demo attached to the PR walks through: the request pile → the
 - **Recommendation ≠ decision**: every brief cites its evidence; the skill never says "approved" or "safe" — it says "recommended, because…"
 - **Never** declines without explicit confirmation in the current conversation; the reason always travels with the decline (the requester sees it)
 - "Never-seen IBAN" is a **signal, not an accusation** — phrased that way in every brief
-- The skill **never approves**: `approve_request` is not used — approving = the Qonto app + your own SCA
+- The skill **never approves**: the approve action is not used — approving = the Qonto app + your own SCA
 - Masked IBANs (last 4 digits) · pagination ≤ 50 everywhere · short history announced · invented examples labelled as such
 
 ---

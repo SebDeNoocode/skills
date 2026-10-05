@@ -41,7 +41,7 @@ Two verdict levels — **✅ recommended** / **🔶 verify** — and every claim
 If the owner decides to refuse: `decline_request`, with the motivated reason attached — the requester sees the refusal and its reason in Qonto, so write it for them. ⚠️ Verified trap: for a multi-transfer request, `request_type` must be `"multi_transfers"` (**plural**). NEVER decline without explicit confirmation in the current conversation.
 
 ### 5. Approvals — deliberately NOT this skill
-`approve_request` exists on the MCP; this skill **never calls it**. Policy: approving means moving money, and that belongs to the Qonto app with the owner's own SCA (2FA) — push notification → Requests → approve. The skill's job ends at the brief. Nothing this skill does can move a euro, and that's the argument to state plainly when asked.
+The approve action exists on the MCP; this skill **never calls it**. Policy: approving means moving money, and that belongs to the Qonto app with the owner's own SCA (2FA) — push notification → Requests → approve. The skill's job ends at the brief. Nothing this skill does can move a euro, and that's the argument to state plainly when asked.
 
 ### 6. Report — output formats
 **Always** reply in the conversation with markdown:
@@ -55,5 +55,5 @@ If the owner decides to refuse: `decline_request`, with the motivated reason att
 - **Recommendation ≠ decision**: every brief cites its evidence; the skill never says "approved" or "safe", it says "recommended, because…".
 - NEVER decline without explicit confirmation in the current conversation; the reason always travels with the decline.
 - "Never-seen IBAN" is a **signal, not an accusation** — phrase it that way in every brief.
-- The skill never approves: no `approve_request`, ever. Approvals = Qonto app + the owner's own SCA.
+- The skill never approves: the approve action is never used. Approvals = Qonto app + the owner's own SCA.
 - Mask IBANs (last 4 digits). Paginate everything (`per_page` ≤ 50). Short history → say every payee looks "new" and degrade honestly. All examples are invented and labelled as such.

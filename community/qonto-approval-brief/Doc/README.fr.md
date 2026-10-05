@@ -43,7 +43,7 @@ Exemples de lignes de brief (inventés) : « ✅ recommandé : 3e paiement ident
 
 ![Schéma fonctionnel](assets/functional.fr.png)
 
-**Le point clé de sécurité** : le trait plein (lecture) ne présente aucun risque ; le trait pointillé (écriture) est un **refus motivé uniquement**, exigé confirmé dans la conversation. L'approbation n'existe pas dans ce skill : `approve_request` n'est **jamais** appelé. Approuver = app Qonto + ta SCA (2FA). Rien de ce que fait ce skill ne peut déplacer un euro — **c'est le modèle de sécurité, pas une limitation.**
+**Le point clé de sécurité** : le trait plein (lecture) ne présente aucun risque ; le trait pointillé (écriture) est un **refus motivé uniquement**, exigé confirmé dans la conversation. L'approbation n'existe pas dans ce skill : l'action d'approbation n'est **jamais** appelé. Approuver = app Qonto + ta SCA (2FA). Rien de ce que fait ce skill ne peut déplacer un euro — **c'est le modèle de sécurité, pas une limitation.**
 
 ## 🔍 Les signaux du brief
 
@@ -93,7 +93,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : la pile de demandes → 
 - **Recommandation ≠ décision** : chaque brief cite ses preuves ; le skill ne dit jamais « approuvé » ni « sûr », il dit « recommandé, parce que… »
 - **Jamais** de refus sans confirmation explicite dans la conversation en cours ; le motif accompagne toujours le refus (le demandeur le voit)
 - « IBAN jamais vu » = **signal, pas accusation** — formulé ainsi dans chaque brief
-- Le skill **n'approuve jamais** : `approve_request` n'est pas utilisé — approuver = app Qonto + ta SCA
+- Le skill **n'approuve jamais** : l'action d'approbation n'est pas utilisé — approuver = app Qonto + ta SCA
 - IBAN masqués (4 derniers chiffres) · pagination ≤ 50 partout · historique court annoncé · exemples inventés et signalés comme tels
 
 ---

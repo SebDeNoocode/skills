@@ -157,7 +157,7 @@
   <div class="diagram"><img src="../assets/functional.en.svg" alt="Functional diagram"></div>
   <div class="secu" style="margin-top:1rem">
     <div class="lock">🔒</div>
-    <p><b>The security model, not a limitation:</b> reads are risk-free; the only write is a <b>motivated decline</b>, confirmed in the conversation. Approval doesn't exist in this skill — <b>approve_request is never called</b>. Approving = the Qonto app + your own SCA (2FA). Nothing this skill does can move a euro.</p>
+    <p><b>The security model, not a limitation:</b> reads are risk-free; the only write is a <b>motivated decline</b>, confirmed in the conversation. Approval doesn't exist in this skill — <b>the approve action is never called</b>. Approving = the Qonto app + your own SCA (2FA). Nothing this skill does can move a euro.</p>
   </div>
 </section>
 
@@ -209,7 +209,7 @@
     <li><strong>Recommendation ≠ decision</strong>: every brief cites its evidence; the skill never says "approved" or "safe" — it says "recommended, because…"</li>
     <li><strong>Never</strong> declines without explicit confirmation in the current conversation; the reason always travels with the decline (the requester sees it)</li>
     <li>"Never-seen IBAN" is a <strong>signal, not an accusation</strong> — phrased that way in every brief</li>
-    <li>The skill <strong>never approves</strong>: <code>approve_request</code> is not used — approving = the Qonto app + your own SCA</li>
+    <li>The skill <strong>never approves</strong>: the approve action is not used — approving = the Qonto app + your own SCA</li>
     <li>Masked IBANs (last 4) · pagination ≤ 50 · <code>decline_request</code> requires <code>request_type: "multi_transfers"</code> (plural) · invented examples labelled as such</li>
   </ul>
 </section>

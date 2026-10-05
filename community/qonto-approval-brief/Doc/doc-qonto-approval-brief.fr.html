@@ -157,7 +157,7 @@
   <div class="diagram"><img src="../assets/functional.fr.svg" alt="Schéma fonctionnel"></div>
   <div class="secu" style="margin-top:1rem">
     <div class="lock">🔒</div>
-    <p><b>Le modèle de sécurité, pas une limitation :</b> la lecture est sans risque ; la seule écriture est un <b>refus motivé</b>, confirmé dans la conversation. L'approbation n'existe pas dans ce skill — <b>approve_request n'est jamais appelé</b>. Approuver = l'app Qonto + ta SCA (2FA). Rien de ce que fait ce skill ne peut déplacer un euro.</p>
+    <p><b>Le modèle de sécurité, pas une limitation :</b> la lecture est sans risque ; la seule écriture est un <b>refus motivé</b>, confirmé dans la conversation. L'approbation n'existe pas dans ce skill — <b>l'action d'approbation n'est jamais appelé</b>. Approuver = l'app Qonto + ta SCA (2FA). Rien de ce que fait ce skill ne peut déplacer un euro.</p>
   </div>
 </section>
 
@@ -209,7 +209,7 @@
     <li><strong>Recommandation ≠ décision</strong> : chaque brief cite ses preuves ; le skill ne dit jamais « approuvé » ni « sûr », il dit « recommandé, parce que… »</li>
     <li><strong>Jamais</strong> de refus sans confirmation explicite dans la conversation en cours ; le motif accompagne toujours le refus (le demandeur le voit)</li>
     <li>« IBAN jamais vu » = <strong>signal, pas accusation</strong> — formulé ainsi dans chaque brief</li>
-    <li>Le skill <strong>n'approuve jamais</strong> : <code>approve_request</code> n'est pas utilisé — approuver = app Qonto + ta SCA</li>
+    <li>Le skill <strong>n'approuve jamais</strong> : l'action d'approbation n'est pas utilisé — approuver = app Qonto + ta SCA</li>
     <li>IBAN masqués (4 derniers) · pagination ≤ 50 · <code>decline_request</code> exige <code>request_type: "multi_transfers"</code> (pluriel) · exemples inventés et signalés</li>
   </ul>
 </section>
