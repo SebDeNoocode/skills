@@ -53,8 +53,15 @@ URL_RE = re.compile(r"https?://[^\s)\]>'\"`]+", re.I)
 
 FRONTMATTER_KEYS = {"name", "description", "license", "allowed-tools", "metadata",
                     "compatibility", "permissions"}
+COMMUNITY_MANIFEST_KEYS = {"$schema", "name", "displayName", "version", "description", "author", "homepage",
+                           "repository", "license", "keywords", "metadata", "defaultEnabled", "skills"}
+COMMUNITY_CODEX_MANIFEST_KEYS = {"$schema", "name", "displayName", "version", "description", "author", "homepage",
+                                 "repository", "license", "keywords", "metadata", "interface"}
+CANONICAL_SKILLS_PATHS = {"./skills/", "./skills", "skills", "skills/"}
 NATIVE_TOOLS = {"Read", "Write", "Edit", "MultiEdit", "Bash", "Glob", "Grep", "WebFetch",
                 "WebSearch", "Task", "NotebookEdit", "TodoWrite", "AskUserQuestion", "Skill"}
+SCOPED_NATIVE_RE = re.compile(r"^([A-Za-z][A-Za-z0-9]*)(\(.+\))$")
+MCP_TOOL_RE = re.compile(r"^mcp__([A-Za-z0-9-]+)__(.+)$")
 
 TEXT_EXT = {".md", ".txt", ".json", ".yaml", ".yml", ".csv", ".py", ".js", ".mjs", ".cjs",
             ".ts", ".tsx", ".jsx", ".sh", ".html", ".css", ".toml", ".example", ".svg"}
@@ -73,6 +80,9 @@ SKILL_MD_FAIL_LINES = 1000
 # Paths only maintainers may touch (catalogue, manifests, workflows, this check, the featured tier).
 PROTECTED_PREFIXES = (".github/", ".claude-plugin/", ".codex-plugin/", ".agents/", "featured/")
 PROTECTED_FILES = {"LICENSE", "MAINTAINERS", "CODEOWNERS"}
+# Rendered by .github/scripts/marketplace.py. Any author may change them as long as they match that rendering: the
+# marketplace workflow proposes them in a pull request opened as github-actions[bot], which is not a maintainer.
+GENERATED_FILES = (".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json")
 
 # Install commands are tokenised rather than regex-matched so flags (`npm i -D x`, `pip install -U x`) cannot hide
 # the package, several packages on one line are all checked, and `pkg@latest` counts as unpinned.
@@ -81,6 +91,9 @@ INSTALLERS = (
     (re.compile(r"\buv\s+pip\s+install\b"), "pip"),
     (re.compile(r"\b(?:npm|pnpm)\s+(?:i|install|add)\b"), "npm"),
     (re.compile(r"\byarn\s+add\b"), "npm"),
+    (re.compile(r"\bpnpm\s+dlx\b"), "npx"),
+    (re.compile(r"\bnpm\s+exec\b"), "npx"),
+    (re.compile(r"\bbunx\b"), "npx"),
     (re.compile(r"\bnpx\b"), "npx"),
     (re.compile(r"\buvx\b"), "uvx"),
 )
@@ -143,22 +156,29 @@ def git(*args: str) -> str:
     return subprocess.run(["git", *args], cwd=ROOT, text=True, capture_output=True, check=True).stdout
 
 
+def git_paths(*args: str) -> list[str]:
+    out = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, check=True).stdout
+    return sorted(os.fsdecode(path) for path in out.split(b"\0") if path)
+
+
 def changed_files(base: str, head: str) -> list[str]:
     # three-dot: only what the branch adds since it forked from base. In CI head is the merge commit, so
     # this equals the plain diff; locally it keeps base's own newer commits out of the picture.
     # --no-renames so a rename shows as delete + add, and D/T so a deletion or a file turned into a symlink
     # cannot slip past the protected-path rule.
-    out = git("diff", "--name-only", "--no-renames", "--diff-filter=ACDMTUXB", f"{base}...{head}")
-    return sorted(p for p in out.splitlines() if p.strip())
+    return git_paths("diff", "--name-only", "-z", "--no-renames", "--diff-filter=ACDMTUXB", f"{base}...{head}")
 
 
 def all_plugin_files() -> list[str]:
-    out = git("ls-files", "--", *PLUGIN_ROOTS, "README.md")
-    return sorted(p for p in out.splitlines() if p.strip())
+    return git_paths("ls-files", "-z", "--", *PLUGIN_ROOTS, "README.md")
 
 
 def rel(p: Path) -> str:
     return p.relative_to(ROOT).as_posix()
+
+
+def is_community_path(p: Path) -> bool:
+    return p.relative_to(ROOT).parts[0] == CONTRIB_ROOT
 
 
 def read_text(p: Path) -> str:
@@ -213,6 +233,8 @@ def check_repo_level(files: list[str], actor: str, base: str, rep: Report) -> se
         parts = f.split("/")
         if f.startswith(PROTECTED_PREFIXES) or f in PROTECTED_FILES:
             if not is_maintainer:
+                if f in GENERATED_FILES and f in generated_up_to_date():
+                    continue
                 rep.add("fail", "protected-path",
                         f"`{f}` is maintained by the Qonto team and cannot change in a skill submission.",
                         file=f, fix=f"Remove this file from the pull request. Contributions go under `{CONTRIB_ROOT}/`.")
@@ -305,6 +327,13 @@ def str_list(perms: dict, key: str, r: str, rep: Report) -> list[str]:
     return v
 
 
+def allowed_tool_items(value) -> list[str]:
+    """Parse scalar or list `allowed-tools`; parentheses may contain spaces."""
+    if isinstance(value, str):
+        return re.findall(r"[^\s,()]+(?:\([^)]*\))?", value)
+    return [str(x) for x in value] if isinstance(value, list) else []
+
+
 def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
     """`<plugin>/.claude-plugin/plugin.json`: the marketplace entry is generated from it."""
     name = pdir.name
@@ -327,6 +356,14 @@ def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
     if not isinstance(m, dict):
         rep.add("fail", "layout", f"`{r}` must be a JSON object.", file=r)
         return {}
+    if is_community_path(pdir):
+        unsupported = sorted(set(m) - COMMUNITY_MANIFEST_KEYS)
+        if unsupported:
+            rep.add("fail", "automatic-execution",
+                    "Community plugin manifests may contain metadata and the canonical skills path only; unsupported "
+                    "field(s): " + ", ".join(f"`{key}`" for key in unsupported) + ".",
+                    file=r, fix="Remove component configuration from `plugin.json`. Community plugins cannot register "
+                                "automatic execution surfaces or custom component paths.")
     if m.get("name") != name:
         rep.add("fail", "layout", f"Manifest `name` is `{m.get('name')}` but the directory is `{name}`.", file=r,
                 fix="Make them identical.")
@@ -351,7 +388,7 @@ def check_plugin_manifest(pdir: Path, rep: Report) -> dict:
         rep.add("warn", "layout", "Manifest has no `author.name`.", file=r, fix='Add `"author": { "name": "...", "url": "..." }`.')
     if m.get("license") not in (None, "MIT"):
         rep.add("warn", "layout", f"Manifest `license` is `{m.get('license')}`, the repository is MIT.", file=r)
-    if "skills" in m and m["skills"] not in ("./skills/", "./skills", "skills", "skills/"):
+    if "skills" in m and (not isinstance(m["skills"], str) or m["skills"] not in CANONICAL_SKILLS_PATHS):
         rep.add("fail", "layout", f"Manifest `skills` points at `{m['skills']}`.", file=r,
                 fix="Skills live in `skills/` inside the plugin. Drop the key or set it to `./skills/`.")
     return m
@@ -396,8 +433,12 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
         if k not in FRONTMATTER_KEYS:
             rep.add("warn", "layout", f"Unknown frontmatter key `{k}`.", file=r, line=2,
                     fix=f"Known keys: {', '.join(sorted(FRONTMATTER_KEYS))}.")
+    if "hooks" in fm and is_community_path(pdir):
+        rep.add("fail", "hooks", "Community skills cannot register hooks that execute automatically.", file=r, line=2,
+                fix="Remove `hooks`. Put user-invoked steps in the skill instructions or scripts instead.")
 
     declared: set[str] = set()
+    declared_mcp: dict[str, set[str]] = {}
     hosts: set[str] = set()
     perms = fm.get("permissions")
     if not isinstance(perms, dict):
@@ -418,6 +459,7 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
         if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
             rep.add("fail", "permissions", f"`permissions.mcp.{server}` must be a list of tool names.", file=r, line=2)
             continue
+        declared_mcp[server] = set(tools)
         if server != "qonto":
             rep.add("note", "permissions", f"Declares a second MCP server `{server}` with {len(tools)} tool(s). "
                     "Reviewers look at this closely.", file=r, line=2)
@@ -444,23 +486,46 @@ def check_frontmatter(pdir: Path, rep: Report) -> tuple[dict, set[str], set[str]
         if not ENV_RE.match(e):
             rep.add("fail", "permissions", f"`permissions.env` entry `{e}` is not an environment variable name.",
                     file=r, line=2, fix="Upper-case letters, digits and underscores, for example `MY_SERVICE_TOKEN`.")
-    for t in str_list(perms, "tools", r, rep):
+    native_tools = set(str_list(perms, "tools", r, rep))
+    for t in native_tools:
         if t not in NATIVE_TOOLS:
-            rep.add("warn", "permissions", f"`permissions.tools` entry `{t}` is not a native agent tool we know.",
+            level = "fail" if is_community_path(pdir) else "warn"
+            rep.add(level, "permissions", f"`permissions.tools` entry `{t}` is not a native agent tool we know.",
                     file=r, line=2, fix=f"Known: {', '.join(sorted(NATIVE_TOOLS))}.")
 
     at = fm.get("allowed-tools")
     if at:
-        items = at.replace(",", " ").split() if isinstance(at, str) else [str(x) for x in at]
-        for item in items:
-            if item.startswith("mcp__qonto__"):
-                t = item[len("mcp__qonto__"):]
-                if t not in KNOWN_TOOLS:
-                    rep.add("fail", "tool-name", f"`allowed-tools` lists `{item}`, which is not a Qonto MCP tool.{suggest(t)}",
+        if not isinstance(at, (str, list)):
+            rep.add("fail", "permissions", "`allowed-tools` must be a string or list of tool names.", file=r, line=2)
+        for item in allowed_tool_items(at):
+            scoped = SCOPED_NATIVE_RE.match(item)
+            mcp_tool = MCP_TOOL_RE.match(item)
+            if item == "*" or (mcp_tool and mcp_tool.group(2) == "*"):
+                rep.add("fail", "permissions", f"`allowed-tools` entry `{item}` grants every tool in its scope.",
+                        file=r, line=2, fix="List each required tool explicitly.")
+            elif item in NATIVE_TOOLS:
+                if item not in native_tools:
+                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.tools` does not.",
+                            file=r, line=2, fix=f"Add `{item}` to `permissions.tools`, or remove it from `allowed-tools`.")
+            elif scoped and scoped.group(1) in NATIVE_TOOLS:
+                native = scoped.group(1)
+                if native not in native_tools:
+                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.tools` does not declare `{native}`.",
+                            file=r, line=2, fix=f"Add `{native}` to `permissions.tools`, or remove the scoped entry.")
+                else:
+                    rep.add("note", "permissions", f"`allowed-tools` scopes `{native}` as `{item}`; reviewers verify the scope.",
                             file=r, line=2)
-                elif t not in declared:
-                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.mcp.qonto` does not declare `{t}`.",
-                            file=r, line=2, fix="Add it to `permissions.mcp.qonto`.")
+            elif mcp_tool:
+                server, tool = mcp_tool.groups()
+                if server == "qonto" and tool not in KNOWN_TOOLS:
+                    rep.add("fail", "tool-name", f"`allowed-tools` lists `{item}`, which is not a Qonto MCP tool.{suggest(tool)}",
+                            file=r, line=2)
+                elif tool not in declared_mcp.get(server, set()):
+                    rep.add("fail", "permissions", f"`allowed-tools` lists `{item}` but `permissions.mcp.{server}` does not declare `{tool}`.",
+                            file=r, line=2, fix=f"Add `{tool}` to `permissions.mcp.{server}`, or remove it from `allowed-tools`.")
+            else:
+                rep.add("fail", "permissions", f"`allowed-tools` entry `{item}` is not a recognized native or MCP tool.",
+                        file=r, line=2, fix="Use an exact native tool or `mcp__<server>__<tool>` name.")
     return fm, declared, hosts
 
 
@@ -583,6 +648,9 @@ def scan_text_file(p: Path, declared: set[str], hosts: set[str], rep: Report,
             rep.add("fail", "layout", "`.mcp.json` is not valid JSON.", file=r)
             return
         for sname, s in (cfg.get("mcpServers") or {}).items():
+            if isinstance(s, dict) and "command" in s and is_community_path(pdir):
+                rep.add("fail", "mcp-command", f"Community plugin MCP server `{sname}` starts a local command.", file=r,
+                        fix="Remove the local `command` server. Use a declared HTTPS server, or keep it outside the plugin.")
             url = (s or {}).get("url", "")
             host = re.sub(r"^https?://", "", url).split("/")[0].split(":")[0].lower()
             if url and host not in hosts:
@@ -714,25 +782,143 @@ def check_pinned_manifest(p: Path, rep: Report, as_requirements: bool = False):
 def check_hooks(pdir: Path, rep: Report):
     hooks = pdir / "hooks" / "hooks.json"
     if hooks.is_file():
-        rep.add("note", "hooks", "Registers agent hooks. Reviewers read every hook and the script it runs.", file=rel(hooks))
+        if is_community_path(pdir):
+            rep.add("fail", "hooks", "Community plugins cannot register hooks that execute automatically.", file=rel(hooks),
+                    fix="Remove `hooks/`. Put user-invoked steps in the skill instructions or scripts instead.")
+        else:
+            rep.add("note", "hooks", "Registers agent hooks. Reviewers read every hook and the script it runs.", file=rel(hooks))
     for sub in ("agents", "commands"):
         if (pdir / sub).is_dir():
             rep.add("note", "layout", f"Ships `{sub}/`.", file=rel(pdir / sub))
+
+
+def check_automatic_execution_files(pdir: Path, rep: Report):
+    if not is_community_path(pdir):
+        return
+    for path, component in ((pdir / "settings.json", "plugin settings"),
+                            (pdir / "monitors" / "monitors.json", "background monitors")):
+        if path.is_file():
+            rep.add("fail", "automatic-execution", f"Community plugins cannot register {component}.", file=rel(path),
+                    fix="Remove this file. Community marketplace plugins are limited to user- or model-invoked components.")
+
+
+def hooks_declare_commands(value) -> bool:
+    """True for a hooks configuration that launches commands, in any shape the agent runtimes
+    accept: a file reference (string or list of strings), an inline object
+    (event -> entries -> hooks -> {command}), an entry with a direct command, or an array of
+    those objects. Covers Claude hooks.json, Codex inline and overlay hooks."""
+    if isinstance(value, str):
+        return True
+    if isinstance(value, list):
+        return any(hooks_declare_commands(v) for v in value)
+    if not isinstance(value, dict):
+        return False
+    for entries in value.values():
+        if not isinstance(entries, list):
+            entries = [entries]
+        for e in entries:
+            if not isinstance(e, dict):
+                continue
+            if e.get("command"):
+                return True
+            inner = e.get("hooks") or []
+            if not isinstance(inner, list):
+                inner = [inner]
+            for h in inner:
+                if isinstance(h, dict) and h.get("command"):
+                    return True
+    return False
+
+
+def declared_hooks(data: dict) -> list:
+    """Every hooks declaration in a JSON object: top-level `hooks` plus the portable
+    `extensions.com.openai.hooks` overlay, which the Codex runtime reads when a recognized
+    root `plugin.json` is present."""
+    out = []
+    if data.get("hooks") is not None:
+        out.append(data["hooks"])
+    ext = data.get("extensions")
+    if isinstance(ext, dict) and isinstance(ext.get("com.openai"), dict) and ext["com.openai"].get("hooks") is not None:
+        out.append(ext["com.openai"]["hooks"])
+    return out
+
+
+def check_component_configs(pdir: Path, rep: Report):
+    """Hook or command-MCP configuration in ANY JSON file, whatever its name: component
+    registration is content, not filename. The Codex overlay (`.codex-plugin/plugin.json`),
+    the portable `mcp.json` and hooks at custom paths all declare the same keys. The Claude
+    manifest (key-validated) and the literal `.mcp.json` (MCP commands checked in
+    scan_text_file) are handled separately. `utf-8-sig` strips a BOM, so a runtime that
+    tolerates one cannot hide a component behind it."""
+    if not is_community_path(pdir):
+        return
+    for p in sorted(pdir.rglob("*.json")):
+        if p.is_symlink() or p.stat().st_size > MAX_FILE_BYTES:
+            continue
+        r = rel(p)
+        if p.relative_to(pdir).as_posix() in (".claude-plugin/plugin.json", ".mcp.json"):
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8-sig", errors="replace"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict):
+            continue
+        if p.relative_to(pdir).as_posix() == ".codex-plugin/plugin.json":
+            unsupported = sorted(set(data) - COMMUNITY_CODEX_MANIFEST_KEYS)
+            if unsupported:
+                rep.add("fail", "automatic-execution",
+                        "Community Codex plugin manifests may contain metadata and `interface` only; unsupported "
+                        "field(s): " + ", ".join(f"`{key}`" for key in unsupported) + ".",
+                        file=r, fix="Remove component configuration from `.codex-plugin/plugin.json`. Community "
+                        "plugins cannot register automatic execution surfaces or custom component paths.")
+            continue
+        if any(hooks_declare_commands(h) for h in declared_hooks(data)):
+            rep.add("fail", "automatic-execution", f"`{r}` declares hook configuration.", file=r,
+                    fix="Community plugins cannot register hooks that execute automatically. Remove the file, or move "
+                        "user-invoked steps into the skill instructions or scripts.")
+        servers = data.get("mcpServers")
+        if servers is not None and not isinstance(servers, dict):
+            rep.add("fail", "layout", f"`{r}` field `mcpServers` must be a JSON object.", file=r,
+                    fix="Map each MCP server name to its configuration object.")
+            continue
+        for sname, s in (servers or {}).items():
+            if isinstance(s, dict) and s.get("command"):
+                rep.add("fail", "mcp-command", f"`{r}` starts local MCP server `{sname}`.", file=r,
+                        fix="Remove the local `command` server. Use a declared HTTPS server, or keep it outside the plugin.")
+
+
+def load_marketplace():
+    """`.github/scripts/marketplace.py` as a module, None when the repository has none."""
+    script = ROOT / ".github" / "scripts" / "marketplace.py"
+    if not script.is_file():
+        return None
+    sys.dont_write_bytecode = True   # no __pycache__ left behind in the contributor's checkout
+    spec = importlib.util.spec_from_file_location("marketplace", script)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def generated_up_to_date() -> set[str]:
+    """The generated files whose committed content is exactly what marketplace.py renders from the plugin directories."""
+    try:
+        mod = load_marketplace()
+        rendered = mod.render()[:2] if mod else ()
+    except Exception:
+        return set()
+    return {f for f, want in zip(GENERATED_FILES, rendered) if (ROOT / f).is_file() and read_text(ROOT / f) == want}
 
 
 def check_manifest(rep: Report):
     """Validate the marketplace the merge would produce: render it from the plugin directories with
     `.github/scripts/marketplace.py`, refuse duplicate plugin names, then run `claude plugin validate` on that
     rendering (written in place for the run, the validator does not follow symlinks, and restored afterwards)."""
-    script = ROOT / ".github" / "scripts" / "marketplace.py"
-    if not script.is_file():
-        rep.add("note", "manifest", "No `.github/scripts/marketplace.py`, manifest validation skipped.")
-        return
     try:
-        sys.dont_write_bytecode = True   # no __pycache__ left behind in the contributor's checkout
-        spec = importlib.util.spec_from_file_location("marketplace", script)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        mod = load_marketplace()
+        if mod is None:
+            rep.add("note", "manifest", "No `.github/scripts/marketplace.py`, manifest validation skipped.")
+            return
         found = mod.plugins()
         rendered = mod.render()[0]
     except Exception as e:   # a broken plugin.json is already a `layout` failure from check_plugin_manifest
@@ -784,6 +970,9 @@ def check_plugin(name: str, rep: Report):
     check_plugin_manifest(pdir, rep)
     skills_dir = pdir / SKILLS_DIR
     skill_dirs = sorted(d for d in skills_dir.iterdir() if d.is_dir()) if skills_dir.is_dir() else []
+    if (pdir / "SKILL.md").is_file() and skill_dirs:
+        rep.add("fail", "layout", f"`{rel(pdir)}/` mixes a root `SKILL.md` with nested skills.", file=rel(pdir),
+                fix="Remove the root `SKILL.md`. Marketplace skills live under `skills/<skill-name>/SKILL.md`.")
     if not skill_dirs:
         rep.add("fail", "layout", f"`{rel(pdir)}/{SKILLS_DIR}/` has no skill.", file=rel(pdir),
                 fix=f"Add at least one `{SKILLS_DIR}/<skill-name>/SKILL.md`.")
@@ -810,6 +999,8 @@ def check_plugin(name: str, rep: Report):
             scan_text_file(p, scope[2], scope[3], rep, reported=reported.setdefault(scope[1], set()),
                            perms_present=scope[4], where=scope[1], pdir=pdir, validated=validated)
     check_hooks(pdir, rep)
+    check_automatic_execution_files(pdir, rep)
+    check_component_configs(pdir, rep)
 
 
 # --------------------------------------------------------------------------- output
