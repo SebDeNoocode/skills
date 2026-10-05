@@ -49,11 +49,25 @@ jobs:
       - name: Run the format check
         id: format
         env:
-          FORMAT_CHECK_ACTOR: ${{ github.event.pull_request.user.login || github.actor }}
+          FORMAT_CHECK_ACTOR: ${{ github.event.pull_request.user.login }}
           BASE: ${{ github.event.pull_request.base.sha || 'origin/main' }}
           PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+          GH_TOKEN: ${{ github.token }}
         # stdout stays connected: the `::error` annotations the checker prints are read from it
         run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+            actor=$(jq -r '.user.login' <<< "$pr")
+            base=$(jq -r '.base.sha' <<< "$pr")
+            head=$(jq -r '.head.sha' <<< "$pr")
+            target=$(jq -r '.base.ref' <<< "$pr")
+            if [ "$target" != "main" ] || [ "$head" != "$(git rev-parse HEAD)" ]; then
+              echo "PR base or head does not match dispatched checkout" >&2
+              exit 1
+            fi
+            FORMAT_CHECK_ACTOR="$actor"
+            BASE="$base"
+          fi
           set +e
           python3 .github/format-check/format_check.py \
             --base "$BASE" \
