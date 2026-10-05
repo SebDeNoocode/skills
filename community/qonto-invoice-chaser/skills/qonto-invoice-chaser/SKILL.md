@@ -4,7 +4,7 @@ description: Intelligent late-invoice chaser for Qonto accounts. Detects overdue
 permissions:
   mcp:
     gmail: [create_draft]
-    qonto: [create_payment_link, get_client, get_organization, list_client_invoices, list_transactions, mark_client_invoice_as_paid]
+    qonto: [create_payment_link, delete_client_invoice, get_client, get_organization, list_client_invoices, list_transactions, mark_client_invoice_as_paid]
   network: []
   env: []
   tools: [Read]
