@@ -79,7 +79,7 @@ The ≤ 3-minute demo attached to the PR walks through: the problem → the swee
 ## 💡 Roadmap ideas
 
 - Send the claim through a Gmail MCP when one is detected — optional multi-MCP enrichment, the core stays Qonto-pure
-- Flag disputed invoices via `change_supplier_invoice_status` — would leave read-only territory, so strictly opt-in
+- Flag disputed invoices via a status change — would leave read-only territory, so strictly opt-in
 - Post-cancellation billing detection: a subscription that keeps charging after a declared cancellation — reuses the cadence engine
 - Scheduled quarterly audit with a diff against the previous report — turns the IBAN watch into true monitoring
 - Multi-currency reconciliation with daily FX rates — turns "to verify (FX)" into verdicts
