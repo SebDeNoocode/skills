@@ -97,6 +97,21 @@
       "license": "MIT"
     },
     {
+      "name": "qonto-supplier-detective",
+      "source": "./community/qonto-supplier-detective",
+      "description": "Forensic audit of supplier invoices and payments on a Qonto account. Sweeps every supplier invoice and every debit to find money leaking out \u2014 duplicate invoices, invoices paid twice, invoice-vs-payment amount gaps, and the highest-value security signal, a known supplier whose payment IBAN suddenly\u2026",
+      "version": "0.1.0",
+      "category": "Community",
+      "tags": [
+        "community"
+      ],
+      "author": {
+        "name": "seb",
+        "url": "https://github.com/SebDeNoocode"
+      },
+      "license": "MIT"
+    },
+    {
       "name": "qonto-tax-pilot",
       "source": "./community/qonto-tax-pilot",
       "description": "French tax radar and cash pilot for Qonto accounts. Builds a dated, amount-estimated tax schedule (VAT, corporate tax instalments, CFE, dividend flat tax), projects the next 90 days of cash, computes the month's tax provision, and \u2014 with explicit user consent \u2014 creates a transfer request to a\u2026",

@@ -101,6 +101,7 @@ project. Needs Node.js 22.20 or later.
 | [`qonto-grant-scout`](./community/qonto-grant-scout) | Public-funding scout for Qonto accounts. | [seb](https://github.com/SebDeNoocode) | community |
 | [`qonto-prescription-guard`](./community/qonto-prescription-guard) | Legal expiry radar for unpaid client invoices on Qonto accounts (France). | [seb](https://github.com/SebDeNoocode) | community |
 | [`qonto-sector-benchmark`](./community/qonto-sector-benchmark) | Sector health check-up for Qonto accounts. | [seb](https://github.com/SebDeNoocode) | community |
+| [`qonto-supplier-detective`](./community/qonto-supplier-detective) | Forensic audit of supplier invoices and payments on a Qonto account. | [seb](https://github.com/SebDeNoocode) | community |
 | [`qonto-tax-pilot`](./community/qonto-tax-pilot) | French tax radar and cash pilot for Qonto accounts. | [seb](https://github.com/SebDeNoocode) | community |
 | [`qonto-tax-radar`](./community/qonto-tax-radar) | French tax pre-audit ("pré-contrôle fiscal") for Qonto accounts, 100% read-only. | [seb](https://github.com/SebDeNoocode) | community |
 | [`qonto-vat-return`](./community/qonto-vat-return) | French VAT return (CA3, form 3310-CA3) preparer for Qonto accounts. | [seb](https://github.com/SebDeNoocode) | community |

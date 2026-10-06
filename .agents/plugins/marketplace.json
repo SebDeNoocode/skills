@@ -95,6 +95,21 @@
       ]
     },
     {
+      "name": "qonto-supplier-detective",
+      "source": {
+        "source": "local",
+        "path": "./community/qonto-supplier-detective"
+      },
+      "description": "Forensic audit of supplier invoices and payments on a Qonto account. Sweeps every supplier invoice and every debit to find money leaking out \u2014 duplicate invoices, invoices paid twice, invoice-vs-payment amount gaps, and the highest-value security signal, a known supplier whose payment IBAN suddenly\u2026",
+      "policy": {
+        "installation": "AVAILABLE"
+      },
+      "category": "Community",
+      "tags": [
+        "community"
+      ]
+    },
+    {
       "name": "qonto-tax-pilot",
       "source": {
         "source": "local",
