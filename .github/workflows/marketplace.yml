@@ -54,8 +54,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: marketplace/regenerate
-        # A pull request opened with GITHUB_TOKEN starts no pull_request run, so the format check is dispatched on
-        # the branch. A maintainer approves and merges; the next merge to main rebuilds the branch from scratch.
+        # A pull request opened with GITHUB_TOKEN starts no pull_request run, so dispatch the trusted main workflow.
+        # A maintainer approves and merges; the next merge to main rebuilds the branch from scratch.
         run: |
           files=(.claude-plugin/marketplace.json .agents/plugins/marketplace.json README.md)
           pr=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
@@ -77,4 +77,4 @@ jobs:
               --body "Rendered by \`.github/scripts/marketplace.py\` from the plugin directories on main at ${GITHUB_SHA}. Review the diff and merge, and the new plugins become installable.")
             pr=${url##*/}
           fi
-          gh workflow run format-check.yml --ref "$BRANCH" -f pr="$pr"
+          gh workflow run format-check.yml --ref main -f pr="$pr"

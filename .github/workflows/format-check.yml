@@ -1,14 +1,14 @@
 # Format check: public, deterministic shape rules for skill submissions. Logs are readable by anyone. The report is
 # uploaded as an artifact and the `format check comment` workflow posts it on the pull request, so it shows up on
-# pull requests from forks too, where this workflow only holds a read-only token. No secrets, no pull_request_target,
-# no self-hosted runner.
+# pull requests from forks too. pull_request_target runs trusted main workflow with read-only scan permissions;
+# an isolated result job has write access but never checks out contributor code. No secrets or self-hosted runner.
 name: format check
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
-  # The marketplace workflow opens its regeneration pull request with GITHUB_TOKEN, which starts no pull_request
-  # run, so it dispatches this workflow on that pull request's branch instead.
+  # The marketplace workflow opens its regeneration pull request with GITHUB_TOKEN, which starts no PR event;
+  # it dispatches this trusted main workflow instead.
   workflow_dispatch:
     inputs:
       pr:
@@ -27,11 +27,40 @@ jobs:
     name: format check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      head: ${{ steps.checkout.outputs.head }}
+      actor: ${{ steps.checkout.outputs.actor }}
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Verify checkout and trusted base
+        id: checkout
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+          EVENT_HEAD: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] && [ "$GITHUB_EVENT_NAME" != pull_request_target ]; then exit 1; fi
+          if [[ ! $PR_NUMBER =~ ^[0-9]{1,9}$ ]]; then exit 1; fi
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          if [ "$(jq -r '.base.ref' <<< "$pr")" != main ]; then exit 1; fi
+          echo "actor=$(jq -r '.user.login' <<< "$pr")" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            EVENT_HEAD=$(jq -r '.head.sha' <<< "$pr")
+          elif [ "$EVENT_HEAD" != "$(jq -r '.head.sha' <<< "$pr")" ]; then
+            echo 'PR head changed before check' >&2; exit 1
+          fi
+          echo "head=$EVENT_HEAD" >> "$GITHUB_OUTPUT"
+          git fetch origin "refs/pull/$PR_NUMBER/head:refs/pull/$PR_NUMBER/head"
+          base=$(bash .github/format-check/prepare_checkout.sh "$GITHUB_EVENT_NAME" "$EVENT_HEAD" "$PR_NUMBER")
+          echo "base=$base" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v5
         with:
@@ -49,28 +78,13 @@ jobs:
       - name: Run the format check
         id: format
         env:
-          FORMAT_CHECK_ACTOR: ${{ github.event.pull_request.user.login }}
-          BASE: ${{ github.event.pull_request.base.sha || 'origin/main' }}
+          FORMAT_CHECK_ACTOR: ${{ steps.checkout.outputs.actor }}
           PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
-          GH_TOKEN: ${{ github.token }}
         # stdout stays connected: the `::error` annotations the checker prints are read from it
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
-            actor=$(jq -r '.user.login' <<< "$pr")
-            base=$(jq -r '.base.sha' <<< "$pr")
-            head=$(jq -r '.head.sha' <<< "$pr")
-            target=$(jq -r '.base.ref' <<< "$pr")
-            if [ "$target" != "main" ] || [ "$head" != "$(git rev-parse HEAD)" ]; then
-              echo "PR base or head does not match dispatched checkout" >&2
-              exit 1
-            fi
-            FORMAT_CHECK_ACTOR="$actor"
-            BASE="$base"
-          fi
           set +e
           python3 .github/format-check/format_check.py \
-            --base "$BASE" \
+            --base '${{ steps.checkout.outputs.base }}' \
             --head HEAD \
             --annotations \
             --json format-check.json \
@@ -78,11 +92,14 @@ jobs:
           code=$?
           cat format-check.md >> "$GITHUB_STEP_SUMMARY"
           echo "$PR_NUMBER" > pr-number.txt
+          echo '${{ steps.checkout.outputs.head }}' > pr-head.txt
           echo "exit=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Test the format check
-        run: python3 .github/format-check/test_format_check.py
+        run: |
+          python3 .github/format-check/test_format_check.py
+          python3 .github/format-check/test_prepare_checkout.py
 
       - name: Upload the report for the comment workflow
         if: always()
@@ -93,6 +110,7 @@ jobs:
             format-check.md
             format-check.json
             pr-number.txt
+            pr-head.txt
           retention-days: 7
 
       - name: Result
@@ -100,3 +118,41 @@ jobs:
           if [ "${{ steps.format.outputs.exit }}" != "0" ]; then
             echo "format check failed, see the summary and the PR comment"; exit 1
           fi
+
+  # Trusted-base workflows run on main. Attach verdict to PR head without
+  # checking out contributor code with write access.
+  dispatch-result:
+    if: always()
+    needs: format
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Post result on PR head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
+          FORMAT_RESULT: ${{ needs.format.result }}
+          CHECKED_HEAD: ${{ needs.format.outputs.head }}
+        run: |
+          set -euo pipefail
+          if [[ ! $PR_NUMBER =~ ^[0-9]{1,9}$ ]]; then exit 1; fi
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          head=$(jq -r '.head.sha' <<< "$pr")
+          if [ "$(jq -r '.base.ref' <<< "$pr")" != main ]; then exit 1; fi
+          if [ -z "$CHECKED_HEAD" ]; then
+            echo 'No verified PR head; cannot post check'
+            exit 0
+          fi
+          if [ "$head" != "$CHECKED_HEAD" ]; then
+            echo 'PR head moved; leave newer check untouched'
+            exit 0
+          fi
+          conclusion=failure
+          if [ "$FORMAT_RESULT" = success ]; then
+            conclusion=success
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/check-runs" -X POST \
+            -f name='format check' -f head_sha="$head" -f status=completed \
+            -f conclusion="$conclusion" -f details_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >/dev/null
