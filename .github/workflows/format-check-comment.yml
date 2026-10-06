@@ -15,18 +15,18 @@ permissions:
 
 jobs:
   comment:
-    if: github.event.workflow_run.event == 'pull_request'
+    if: github.event.workflow_run.event == 'pull_request_target' || github.event.workflow_run.event == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: format-check
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Post or update the comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const fs = require('fs');
@@ -35,8 +35,10 @@ jobs:
             if (!/^[0-9]{1,9}$/.test(raw)) { core.setFailed(`bad pull request number in the artifact: ${raw}`); return; }
             const issue_number = Number(raw);
             const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: issue_number });
-            if (pr.head.sha !== context.payload.workflow_run.head_sha) {
-              core.info(`pull request ${issue_number} moved on (${pr.head.sha} vs ${context.payload.workflow_run.head_sha}), nothing to post`);
+            const checkedHead = fs.readFileSync('pr-head.txt', 'utf8').trim();
+            if (!/^[0-9a-f]{40}$/.test(checkedHead)) { core.setFailed('bad checked head'); return; }
+            if (pr.head.sha !== checkedHead) {
+              core.info(`pull request ${issue_number} moved on (${pr.head.sha} vs ${checkedHead}), nothing to post`);
               return;
             }
             const body = fs.readFileSync('format-check.md', 'utf8');
