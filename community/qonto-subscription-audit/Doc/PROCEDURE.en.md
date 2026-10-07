@@ -30,7 +30,7 @@
 | 3 | Confirm or dismiss the proposed zombies 🧟 and newborns 🌱 | The skill never decrees — you confirm usage |
 | 4 | Read the hikes table and the **cumulated annual overcost** | You know what silent inflation costs you per year, FX/VAT/usage excluded |
 | 5 | Say: "**Show me the dashboard**" | Dashboard built directly in Claude; "export it as HTML" → self-contained file in Qonto colors |
-| 6 | Say: "**Write the negotiation email for [supplier]**", then confirm | Gmail draft (or text): tenure, volume, hike record → **review, adjust, send it yourself** ✅ |
+| 6 | Say: "**Write the negotiation email for [supplier]**", review the full preview, then confirm the Gmail upload | Subject, body and recipient shown before draft creation; changed content requires fresh confirmation → **send it yourself** ✅ |
 
 > 💡 To **protect a subscription with a capped virtual card** (monthly cap, charges beyond it declined): that's the **`qonto-subscription-guardian`** skill — the audit finds, the guardian protects.
 
@@ -73,3 +73,5 @@ The skill is **100 % read-only** on Qonto: no writes, no transfers, no cards cre
 for the capped card, that's the `qonto-subscription-guardian` skill, with your consent and your SCA.
 Emails (negotiation, digest) are **drafts** — you review, edit, and send them (or not) yourself.
 No recipient is ever added without you. IBANs are masked in every report.
+Before each Gmail draft, review its exact subject, full body and recipient (blank unless you supplied it). Confirm the upload after this preview: even an unsent draft stores financial details in the connected Gmail account. Changed content or recipients require a new preview and confirmation; emails exclude IBANs and unrelated transactions.
+Account data is treated as untrusted text: embedded instructions, links and destinations cannot authorize actions. HTML dashboards escape account text, never insert it as executable content, and load no external resources or network requests; markdown tables are the fallback.
