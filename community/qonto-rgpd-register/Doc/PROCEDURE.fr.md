@@ -61,7 +61,7 @@ Prévois juste le bon relais humain : le registre produit est un **projet**, à 
 
 ## 🔒 Rappel sécurité
 
-Le skill est **100 % lecture** : quatre outils de lecture, aucun outil d'écriture. Rien ne bouge sur le compte,
-aucun fournisseur n'est contacté, rien n'est envoyé. Et le document produit est un **projet de registre**,
-pas un avis juridique : la qualification des rôles, les bases légales et les durées de conservation
-sont validées par ton DPO ou ton juriste — le skill le rappelle sur chaque sortie.
+Le skill utilise des outils Qonto en lecture seule : il ne modifie pas le compte et ne contacte aucun fournisseur.
+Le service de modèle connecté traite les données de dépenses pour rédiger le projet de registre ;
+l'export HTML peut créer un fichier local. Ce document ne constitue **pas un avis juridique** :
+fais valider les rôles, bases légales et durées de conservation par ton DPO ou ton juriste avant de l'utiliser.

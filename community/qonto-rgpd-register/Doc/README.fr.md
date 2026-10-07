@@ -42,7 +42,7 @@ Même matière première que `qonto-subscription-audit`, lecture opposée : lui 
 
 ![Schéma fonctionnel](assets/functional.fr.png)
 
-**Zéro écriture, par conception** : quatre outils de lecture, aucun outil d'écriture. Le skill ne modifie rien sur le compte, ne contacte aucun fournisseur, n'envoie rien. Il transforme une donnée que tu as déjà (tes débits) en un document que tu n'as pas (ton registre) — et la validation reste humaine.
+**Aucune modification du compte Qonto** : outils Qonto en lecture seule, aucun fournisseur contacté. Le service de modèle connecté traite les données de dépenses pour rédiger le projet de registre ; l'export HTML peut créer un fichier local. Un DPO ou juriste doit valider le registre avant utilisation.
 
 ## 🗂 Catégories de sous-traitants reconnues
 

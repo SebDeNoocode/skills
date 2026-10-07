@@ -11,7 +11,7 @@ permissions:
 
 # Qonto RGPD Register
 
-Your bank account knows your data processors better than you do. Read-only, zero write: the skill detects, classifies and drafts; a human validates. Every output carries the same disclaimer — **draft register, not legal advice, to be validated by a DPO or lawyer**.
+Your bank account knows your data processors better than you do. Qonto access is read-only: the skill detects, classifies and drafts; a human validates. The connected model processes spending data, and HTML export may write a local file. Every output carries the same disclaimer — **draft register, not legal advice, to be validated by a DPO or lawyer**.
 
 ## Prerequisites
 1. `get_organization` first → legal name, legal form, address, country. That block becomes the mandatory Article 30 header (data controller identity), and `list_transactions` requires `bank_account_id`/`iban` anyway.
@@ -56,4 +56,4 @@ The HTML export must be **static and self-contained**, with inline styles only. 
 - **Never a definitive legal qualification** (processor vs controller vs joint controllership, legal basis, retention) — every card is marked "to validate", placeholders stay visibly placeholders.
 - Never invent vendor facts: unknown HQ or hosting → stated as unknown, with "check the invoice / the vendor's DPA page" as the next step.
 - A register draft ≠ GDPR compliance: it is one required document, not the whole program. Recommend DPO/legal validation in every report.
-- Read-only by design — zero write tool, nothing on the account changes. Mask IBANs (last 4 digits). Paginate everything (`per_page` ≤ 50). All examples in the documentation are invented.
+- Qonto access is read-only — nothing on the account changes and no vendor is contacted. Native `Write` is limited to the register export. Mask IBANs (last 4 digits). Paginate everything (`per_page` ≤ 50). All examples in the documentation are invented.

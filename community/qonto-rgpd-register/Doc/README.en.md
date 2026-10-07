@@ -42,7 +42,7 @@ Would someone use this on a Monday morning? It's the Monday a client's security 
 
 ![Functional diagram](assets/functional.en.png)
 
-**Zero write, by design**: four read tools, no write tool. The skill changes nothing on the account, contacts no vendor, sends nothing. It turns data you already have (your debits) into a document you don't (your register) — and validation stays human.
+**No Qonto account changes**: read-only Qonto tools, no vendor contacted. The connected model processes spending data to draft the register; HTML export may write a local file. A DPO or lawyer must validate the register before use.
 
 ## 🧪 Holds up on messy data
 

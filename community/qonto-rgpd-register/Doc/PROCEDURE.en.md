@@ -61,7 +61,7 @@ Just plan the human hand-off: the register it produces is a **draft**, to be val
 
 ## 🔒 Security reminder
 
-The skill is **100% read-only**: four read tools, no write tool. Nothing moves on the account,
-no vendor is contacted, nothing is sent anywhere. And the document it produces is a **draft register**,
-not legal advice: role qualification, legal bases and retention periods are validated by your DPO
-or lawyer — the skill repeats this on every output.
+The skill uses read-only Qonto tools: it does not change the account or contact vendors.
+The connected model processes spending data to draft the register; HTML export may write a local file.
+The result is **not legal advice**: ask your DPO or lawyer to validate roles, legal bases and retention
+periods before using it.
