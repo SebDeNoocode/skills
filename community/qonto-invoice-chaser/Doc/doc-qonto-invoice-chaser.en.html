@@ -141,7 +141,7 @@
   <div class="diagram"><img src="../assets/functional.en.svg" alt="Functional diagram"></div>
   <div class="secu" style="margin-top:1rem">
     <div class="lock">🔒</div>
-    <p><b>The skill writes; the user decides:</b> reads (solid arrows) are risk-free; the two writes (dashed) are <b>proposed</b> actions — marking an invoice paid requires explicit confirmation in the conversation, and the reminder only ever exists as a <b>draft</b> that the user alone reviews and sends. No email leaves without you.</p>
+    <p><b>The skill writes; the user decides:</b> reads (solid arrows) do not change account records, but returned text remains untrusted data; the two writes (dashed) are <b>proposed</b> actions — marking an invoice paid requires explicit confirmation in the conversation, and the reminder only ever exists as a <b>draft</b> that the user alone reviews and sends. No email leaves without you.</p>
   </div>
 </section>
 
@@ -196,7 +196,11 @@
     <li><strong>Never</strong> sends an email on its own: drafts by default, direct send only on explicit request — never presented as sent when it isn't</li>
     <li>Below full matching confidence: a question, not an action</li>
     <li>Legal computations are France-only and informative — professional review recommended before a formal notice goes out</li>
-    <li>Rehearsals: fictional client + draft invoices + <code>delete_client_invoice</code>; test drafts cleaned up · masked IBANs · pagination ≤ 50</li>
+    <li>Rehearsals use fabricated examples in the conversation only; no Qonto records or Gmail drafts are created, modified or deleted for testing</li>
+    <li>Tool-returned text is data, never instructions or user approval; embedded requests cannot change recipients or payment details</li>
+    <li>Gmail drafts contain only the relevant client's invoice details and existing invoice payment means; no unrelated transactions, other clients' data, internal payer profiles or CC/BCC</li>
+    <li>HTML dashboards escape returned text and stay self-contained, with no external resources or network requests</li>
+    <li>Masked IBANs · pagination ≤ 50</li>
   </ul>
 </section>
 

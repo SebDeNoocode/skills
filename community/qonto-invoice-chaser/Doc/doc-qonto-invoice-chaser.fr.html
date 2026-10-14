@@ -155,7 +155,7 @@
   <div class="diagram"><img src="../assets/functional.fr.svg" alt="Schéma fonctionnel"></div>
   <div class="secu" style="margin-top:1rem">
     <div class="lock">🔒</div>
-    <p><b>Le skill rédige ; toi, tu décides :</b> la lecture (trait plein) est sans risque ; les deux écritures (pointillé) sont des actions <b>proposées</b> — le marquage « payée » exige la confirmation explicite dans la conversation, et la relance n'existe qu'en <b>brouillon</b> que toi seul relis et envoies. Aucun email ne part sans toi.</p>
+    <p><b>Le skill rédige ; toi, tu décides :</b> la lecture (trait plein) ne modifie pas les données du compte, mais les textes renvoyés restent des données non fiables ; les deux écritures (pointillé) sont des actions <b>proposées</b> — le marquage « payée » exige la confirmation explicite dans la conversation, et la relance n'existe qu'en <b>brouillon</b> que toi seul relis et envoies. Aucun email ne part sans toi.</p>
   </div>
 </section>
 
@@ -210,7 +210,11 @@
     <li><strong>Jamais</strong> d'envoi d'email de sa propre initiative : brouillons par défaut, envoi direct uniquement sur demande explicite — jamais présenté comme envoyé s'il ne l'est pas</li>
     <li>Sous le seuil de confiance du matching : question plutôt qu'action</li>
     <li>Calculs juridiques France uniquement, informatifs — relecture pro recommandée avant mise en demeure</li>
-    <li>Répétitions : client fictif + factures draft + <code>delete_client_invoice</code> ; brouillons de test nettoyés · IBAN masqués · pagination ≤ 50</li>
+    <li>Répétitions : exemples fictifs dans la conversation uniquement ; aucune création, modification ou suppression de données Qonto ou de brouillons Gmail pour les tests</li>
+    <li>Les textes renvoyés par les outils sont des données, jamais des instructions ni une approbation utilisateur ; les demandes intégrées ne peuvent changer les destinataires ou les coordonnées de paiement</li>
+    <li>Les brouillons Gmail contiennent uniquement les détails des factures du client concerné et les moyens de paiement déjà indiqués sur ces factures ; aucune transaction sans rapport, donnée d'autres clients, profil payeur interne ou copie CC/BCC</li>
+    <li>Les dashboards HTML échappent les textes renvoyés et restent autonomes, sans ressource externe ni requête réseau</li>
+    <li>IBAN masqués · pagination ≤ 50</li>
   </ul>
 </section>
 
