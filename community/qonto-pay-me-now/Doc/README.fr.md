@@ -1,7 +1,9 @@
 # 💸 qonto-pay-me-now — Du devis à l'argent, sans friction
 
 > **Skill #11 · nouveau** · Hackathon Qonto × Anthropic MCP (10-13/07/2026)
-> Différenciateur clé : **les payment links fonctionnent via MCP malgré la doc officielle qui les dit non supportés** — vérifié en production le 03/07. Personne d'autre ne le sait.
+> La création de payment links est prise en charge par le MCP Qonto. Suivre le schéma actuel et la documentation officielle.
+
+**Confidentialité par défaut :** URL Qonto brute et QR encodant cette URL, sans appel à Short.io. Avant de raccourcir le lien ou de lire les statistiques, expliquer que Short.io reçoit et stocke l'URL de paiement et suit les clics du payeur, puis demander un accord explicite dans la conversation en cours. Connecter le MCP ou confirmer l'envoi de la facture ne vaut pas accord. Après accord : slug aléatoire, sans identifiant de facture/client ni autre métadonnée Qonto. L'URL Qonto reste visible ; le QR l'encode toujours. Sans accord, les clics sont inconnus, pas « aucun clic ».
 
 ---
 
@@ -11,7 +13,7 @@ Le trou noir du freelance : le devis est accepté… et puis rien. La facture at
 
 1. **Devis accepté détecté** — `list_quotes` croisé avec `list_client_invoices` : seuls les devis acceptés **jamais facturés** remontent, avec client, montant et date
 2. **Facture générée depuis le devis** — brouillon d'abord, document RÉEL : rien ne part sans ta confirmation explicite
-3. **Payment link Qonto** — le client paie par carte ou virement en un clic ; lien court trackable Short.io + **QR code** proposé pour les factures imprimées
+3. **Payment link Qonto** — URL Qonto brute + son **QR code** ; Short.io et suivi du payeur seulement après information et accord explicite
 4. **Suivi & relance douce** — lien cliqué mais impayé après 48 h → relance douce proposée, jamais envoyée toute seule
 
 Le cycle de paiement passe de « quand il y pense » à « il clique, il paie ».
@@ -31,10 +33,12 @@ Le cycle de paiement passe de « quand il y pense » à « il clique, il paie »
 
 ![Fonctionnement global](assets/flow.fr.png)
 
+Ancien schéma : les règles de confidentialité ci-dessus remplacent son étape Short.io automatique/slug lisible et sa mention de payment links non pris en charge.
+
 1. **Détection** : `get_organization` puis `list_quotes` paginé ≤ 50 — devis acceptés croisés avec les factures existantes, seuls les jamais facturés sont proposés
 2. **Facture depuis le devis** : `create_client_invoice` en **brouillon** (client, lignes, montants, TVA repris du devis) → relecture → envoi seulement après ton OK explicite. Bonus : si tu es en TVA sur les encaissements (`on_receipts`), accélérer le paiement accélère aussi ton cycle de TVA
-3. **Payment link** : `create_payment_link` sur le montant de la facture, numéro de facture dans la description pour un rapprochement trivial. **Vérifié le 03/07 : ça marche via MCP, contrairement à ce que dit la doc officielle**
-4. **Lien court + QR** : Short.io présent → `create-short-link` avec un slug lisible (`pay-INV-2026-042`) + QR code proposé pour l'imprimé. Absent → le lien Qonto brut suffit, le skill le dit et continue
+3. **Payment link** : `create_payment_link` sur le montant de la facture, numéro pour le rapprochement. Suivre le schéma actuel de l'outil pris en charge
+4. **Lien court + QR** : URL Qonto brute/QR par défaut. Après information et accord explicite, `create-short-link` avec un slug aléatoire sans métadonnée de facture/client. Sinon, aucun appel à Short.io ni suivi des clics
 5. **Envoi maîtrisé** : `send_client_invoice` et/ou brouillon Gmail avec le lien — tu relis, tu envoies. Jamais présenté comme envoyé si en attente
 6. **Suivi** : statut du lien (`get_payment_link`) + clics (`link-statistics`) + encaissements réels (`list_transactions`) → cliqué sans payer à J+2 = relance douce proposée ; payé hors lien = `mark_client_invoice_as_paid` proposé avec la transaction en preuve
 
@@ -62,8 +66,8 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le trou noir → détect
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Tableaux markdown : pipeline devis → facture → lien, puis matrice de suivi | **Toujours** — c'est la base |
-| **Le payment link (+ lien court)** | URL Qonto + URL courte Short.io, prêtes à partager | À chaque cycle |
-| **QR code** | Fichier/artifact image encodant le lien, pour les factures imprimées | Si l'hôte affiche les fichiers ; sinon les liens suffisent |
+| **Le payment link (+ lien court optionnel)** | URL Qonto brute ; URL Short.io seulement après accord explicite | À chaque cycle |
+| **QR code** | Fichier/artifact image encodant l'URL Qonto brute | Si l'hôte affiche les fichiers ; sinon le lien brut suffit |
 | **Rapport de suivi** | Tableau clics vs encaissements + relances proposées | Sur demande / à J+2 |
 
 ## 💡 Améliorations possibles (dans les clous du hackathon)

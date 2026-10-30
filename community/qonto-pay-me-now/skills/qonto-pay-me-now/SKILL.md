@@ -19,7 +19,7 @@ From quote to cash, without the black hole. The freelance trap: the quote gets a
 1. `get_organization` first → accounts, `bank_account_id`/IBAN (required by `list_transactions`), country, legal identity. Nothing hardcoded — the skill adapts to any organization.
 2. **Payment links** must be activated once in the Qonto app. If `create_payment_link` is refused, say so, explain the one-time activation, and continue with the invoice alone.
 3. **Country-aware**: the quote → invoice → payment link cycle is identical for every Qonto country (FR, DE, ES, IT, AT, NL, BE, PT). Legal wording of reminders is fully covered for **France**; elsewhere, adapt the tone and never invent local legal mentions.
-4. **Optional MCPs, detected dynamically**: Short.io (`create-short-link`, `link-statistics`) for a trackable short link; Gmail for sending. Absent → the raw Qonto payment link and copy-ready text work fine; say so and continue.
+4. **Optional MCPs**: Short.io (`create-short-link`, `link-statistics`) requires explicit approval after the disclosure in step 4; a connected MCP is not consent. Gmail only creates a draft after the user's explicit go. Default → the raw Qonto payment link and copy-ready text.
 
 ## Workflow
 
@@ -30,27 +30,32 @@ From quote to cash, without the black hole. The freelance trap: the quote gets a
 `create_client_invoice` as a **DRAFT**, carrying over the quote's client, line items, amounts and VAT. ⚠️ Invoices created via MCP are **REAL legal documents**: always show the draft (lines, totals, due date) and **never send without explicit confirmation** in the current conversation. Then `send_client_invoice`. Respect the organization's numbering — never invent invoice numbers. Note: `vat_payment_condition: "on_receipts"` means VAT follows the client's *payment*, not the invoice — worth telling the user their payment link literally accelerates their VAT cycle too.
 
 ### 3. Create the payment link
-`create_payment_link` for the invoice amount, reusing the invoice number in the description so reconciliation is trivial. The client pays by card or bank transfer in one click. ⚠️ **The official MCP docs list payment links as unsupported — they work** (verified against the live API on July 3rd). Call the tool; don't trust the doc. If it errors, the payment-link feature isn't activated on the account → point to the Qonto app, continue invoice-only.
+`create_payment_link` for the invoice amount, reusing the invoice number so reconciliation is trivial. Follow the tool's current schema and official Qonto documentation: payment-link creation is supported. If the tool is unavailable, continue invoice-only. If it errors, report the actual error; suggest activation in the Qonto app only when the error identifies missing activation.
 
 ### 4. Short link + QR (optional enrichment)
-If the Short.io MCP is present: `create-short-link` with a readable slug (e.g. `pay-INV-2026-042`) → a short, trackable URL. Offer a **QR code** encoding the link for printed invoices (generate it as a file/artifact when the host renders files). Without Short.io: the raw Qonto link is perfectly fine — say so, skip tracking, continue.
+Default: return the raw Qonto payment URL and offer a **QR code** encoding that URL for printed invoices (generate it as a file/artifact when the host renders files). No Short.io call is needed for either.
+
+If Short.io is connected and the user wants a short link, first explain: **Short.io will receive and store the Qonto payment URL and track payer clicks.** Ask for explicit approval in the current conversation before any Short.io call, even if the user already requested shortening or confirmed invoice delivery. Connection, skill activation and invoice-send approval are not approval for this sharing and tracking. No approval, refusal or unavailable connector → keep the raw Qonto URL/QR, skip Short.io and tracking, continue.
+
+Only after that approval, call `create-short-link` with the exact URL returned by Qonto and a random slug unrelated to the invoice or client. Send no invoice number, client name, invoice contents, bank details or other Qonto data as slug, title, tags or metadata. Keep the raw Qonto URL visible alongside the short link; the QR still encodes the raw Qonto URL.
 
 ### 5. Deliver — only with explicit consent
 With the user's explicit go: `send_client_invoice`, and/or a Gmail draft (if the Gmail MCP is present) containing the invoice and the payment link — the user reviews and hits send themselves. Otherwise: copy-ready message text. Never present anything as sent while it is pending.
 
 ### 6. Follow up — clicks vs cash
-On request or ~48 h later: `list_payment_links` / `get_payment_link` (status), Short.io `link-statistics` (clicks), and `list_transactions` (real money in — requires `bank_account_id` from step 0). Decision matrix:
+On request or ~48 h later: `list_payment_links` / `get_payment_link` (status) and `list_transactions` (real money in — requires `bank_account_id` from prerequisites). Use Short.io `link-statistics` only for a link whose sharing and tracking the user explicitly approved in the current conversation. Otherwise report clicks as **unknown / tracking not enabled**, not "not clicked". Decision matrix:
 - **Not clicked, not paid** → check delivery, offer to resend through another channel.
 - **Clicked, unpaid > 48 h** → propose a **gentle nudge** ("the link is still active") — drafted, never auto-sent.
 - **Paid via the link** → confirm, close the loop.
 - **Paid by plain transfer outside the link** → match the transaction (amount ± 0.01, counterparty, reference) and propose `mark_client_invoice_as_paid` with the transaction as evidence.
 
 ## Output formats
-**Always** reply in the conversation with markdown tables: the quote→invoice→link pipeline (one row per accepted quote), and the follow-up matrix (clicked · paid · proposed action). The **payment link + short link** are the deliverable the user shares. **When the host renders files** (claude.ai artifacts, Claude Desktop, Claude Code): also generate the QR code. If it can't, say nothing about it — the links are enough.
+**Always** reply in the conversation with markdown tables: the quote→invoice→link pipeline (one row per accepted quote), and the follow-up matrix (clicked · paid · proposed action). The **raw Qonto payment link** is the default deliverable; include a short link only after the step 4 approval. **When the host renders files** (claude.ai artifacts, Claude Desktop, Claude Code): also generate a QR code encoding the raw Qonto URL. If it can't, say so — the raw link is enough.
 
 ## Guardrails
 - Invoices via MCP are REAL: draft first, explicit confirmation before `send_client_invoice`, rehearsals on a fictional client + `delete_client_invoice` afterwards.
 - **This skill never moves money out.** A payment link only lets the client pay *in*; it is unrelated to outbound transfers, which the MCP cannot execute anyway — any transfer request requires the user's own SCA in the Qonto app.
 - Nothing is sent (invoice, email, nudge) without explicit confirmation in the current conversation; never presented as sent/paid while pending.
+- No Short.io calls before explicit approval of payment-URL sharing and payer click tracking. Default to raw Qonto URL/QR; never put invoice or client identifiers in short-link metadata.
 - Amounts always come from the quote or invoice — never invented. Mask IBANs (last 4 digits). Paginate everything (`per_page` ≤ 50).
 - Degrade honestly: no quotes, no payment-link feature, no Short.io, non-French account → say what works and what doesn't, and keep going with what does.

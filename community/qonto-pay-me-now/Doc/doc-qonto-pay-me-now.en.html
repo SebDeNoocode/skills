@@ -103,7 +103,7 @@
   <div class="grid4">
     <div class="pcard"><span class="n">1</span><h4>Accepted quote detected</h4><p>Quotes cross-checked against existing invoices — only the accepted, never-invoiced ones surface, with client, amount and date.</p></div>
     <div class="pcard"><span class="n">2</span><h4>Invoice from the quote</h4><p>Draft first, REAL document: reviewed line by line, sent only after your explicit confirmation.</p></div>
-    <div class="pcard"><span class="n">3</span><h4>Payment link + QR</h4><p>The client pays by card or bank transfer in one click. Trackable Short.io short link + a QR code for printed invoices.</p></div>
+    <div class="pcard"><span class="n">3</span><h4>Payment link + QR</h4><p>Raw Qonto URL and its QR by default. Short.io shortening and payer tracking only after disclosure and explicit approval.</p></div>
     <div class="pcard"><span class="n">4</span><h4>Follow-up &amp; gentle nudge</h4><p>Clicked but unpaid after 48 h → a soft reminder is proposed, drafted — never sent on its own.</p></div>
   </div>
   <p style="margin-top:.8rem">Would someone use this on a Monday morning? <strong>It's what you run the second a client says yes.</strong></p>
@@ -125,9 +125,11 @@
 <section>
   <h2>⚙️ How it works</h2>
   <div class="diagram"><img src="../assets/flow.en.svg" alt="How it works — 6 steps"></div>
+  <p>Legacy diagram: privacy rules below replace its automatic Short.io/readable-slug step and its claim about unsupported payment links.</p>
   <h3>Holds up on messy data</h3>
   <ul>
-    <li><strong>The differentiator</strong>: the official MCP docs list payment links as unsupported — <strong>they work</strong> (verified against the live API on a production account). The skill calls <code>create_payment_link</code> directly instead of trusting the doc</li>
+    <li><strong>Payment links</strong>: creation is supported by the Qonto MCP. Follow the current tool schema and official documentation; if unavailable, continue invoice-only</li>
+    <li><strong>Privacy default</strong>: raw Qonto URL and QR encoding that URL, no Short.io calls. Before shortening or reading click stats, explain that Short.io receives and stores the payment URL and tracks payer clicks, then ask for explicit approval in the current conversation. Connection or invoice-send approval is not consent. Approved links use random slugs, no invoice/client identifiers or other Qonto metadata. Keep the raw URL visible; the QR always encodes it. Without approval, clicks are unknown, not “not clicked”</li>
     <li><strong>No accepted quotes?</strong> The skill says so and offers to start from any existing unpaid invoice — the rest of the cycle is identical</li>
     <li><strong>Payment links not activated?</strong> One-time activation explained (Qonto app), the cycle continues invoice-only</li>
     <li>Short.io or Gmail absent → raw Qonto link + copy-ready text, stated plainly — no tracking silently faked</li>
@@ -162,8 +164,8 @@
   <div class="scroll"><table>
     <tr><th>Output</th><th>Format</th><th>When</th></tr>
     <tr><td><b>Conversation reply</b></td><td>Markdown tables: quote → invoice → link pipeline, follow-up matrix</td><td><strong>Always</strong> — the baseline</td></tr>
-    <tr><td><b>The payment link (+ short link)</b></td><td>Qonto URL + Short.io short URL, ready to share</td><td>Every cycle</td></tr>
-    <tr><td><b>QR code</b></td><td>Image file/artifact encoding the link, for printed invoices</td><td>When the host renders files; otherwise the links are enough</td></tr>
+    <tr><td><b>The payment link (+ optional short link)</b></td><td>Raw Qonto URL; Short.io URL only after explicit approval</td><td>Every cycle</td></tr>
+    <tr><td><b>QR code</b></td><td>Image file/artifact encoding the raw Qonto URL</td><td>When the host renders files; otherwise the raw link is enough</td></tr>
     <tr><td><b>Follow-up report</b></td><td>Clicks vs cash + proposed nudges</td><td>On demand / at D+2</td></tr>
   </table></div>
 </section>

@@ -1,7 +1,9 @@
 # 💸 qonto-pay-me-now — From quote to cash, no friction
 
 > **Qonto × Anthropic MCP Hackathon submission** · Agent Skill for the Qonto MCP
-> Key differentiator: **payment links work through the MCP even though the official docs list them as unsupported** — verified against the live API on a production account.
+> Payment-link creation is supported by the Qonto MCP. Follow its current schema and official documentation.
+
+**Privacy default:** raw Qonto URL and QR encoding that URL, no Short.io calls. Before shortening or reading click stats, explain that Short.io receives and stores the payment URL and tracks payer clicks, then ask for explicit approval in the current conversation. Connection or invoice-send approval is not consent. Approved links use random slugs, no invoice/client identifiers or other Qonto metadata. Keep the raw URL visible; the QR always encodes it. Without approval, clicks are unknown, not "not clicked".
 
 ---
 
@@ -11,7 +13,7 @@ The freelance black hole: the client says yes to your quote… and then nothing 
 
 1. **Accepted quote detected** — `list_quotes` cross-checked against `list_client_invoices`: only the accepted quotes that were **never invoiced** surface, with client, amount and date
 2. **Invoice generated from the quote** — draft first, REAL document: nothing goes out without your explicit confirmation
-3. **Qonto payment link** — the client pays by card or bank transfer in one click; trackable Short.io short link + a **QR code** offered for printed invoices
+3. **Qonto payment link** — raw Qonto URL + its **QR code**; Short.io shortening and payer tracking only after disclosure and explicit approval
 4. **Follow-up & gentle nudge** — link clicked but unpaid after 48 h → a soft reminder is proposed, never sent on its own
 
 The payment cycle shrinks from "whenever they think of it" to "they click, they pay." Would someone use this on a Monday morning? It's what you run the second a client says yes.
@@ -31,10 +33,12 @@ The payment cycle shrinks from "whenever they think of it" to "they click, they 
 
 ![How it works](assets/flow.en.png)
 
+Legacy diagram: privacy rules above replace its automatic Short.io/readable-slug step and its claim about unsupported payment links.
+
 1. **Detection**: `get_organization`, then `list_quotes` paginated ≤ 50 — accepted quotes cross-checked against existing invoices; only the never-invoiced ones are surfaced
 2. **Invoice from the quote**: `create_client_invoice` as a **draft** (client, lines, amounts, VAT carried over) → review → sent only after your explicit go. Bonus: on cash-basis VAT (`on_receipts`), a faster payment literally accelerates your VAT cycle too
-3. **Payment link**: `create_payment_link` on the invoice amount, invoice number in the description so reconciliation is trivial. **Verified live: it works through the MCP, contrary to the official docs**
-4. **Short link + QR**: Short.io present → `create-short-link` with a readable slug (`pay-INV-2026-042`) + a QR code for the printed version. Absent → the raw Qonto link works fine, the skill says so and continues
+3. **Payment link**: `create_payment_link` on the invoice amount, invoice number for reconciliation. Follow the supported tool's current schema
+4. **Short link + QR**: raw Qonto URL/QR by default. After privacy disclosure and explicit approval, `create-short-link` with a random slug and no invoice/client metadata. Otherwise skip Short.io and tracking
 5. **Controlled delivery**: `send_client_invoice` and/or a Gmail draft carrying the link — you review, you send. Never presented as sent while pending
 6. **Follow-up**: link status (`get_payment_link`) + clicks (`link-statistics`) + real cash in (`list_transactions`) → clicked-but-unpaid at D+2 = gentle nudge proposed; paid outside the link = `mark_client_invoice_as_paid` proposed with the transaction as evidence
 
@@ -67,8 +71,8 @@ The payment cycle shrinks from "whenever they think of it" to "they click, they 
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Markdown tables: quote → invoice → link pipeline, then the follow-up matrix | **Always** — the baseline |
-| **The payment link (+ short link)** | Qonto URL + Short.io short URL, ready to share | Every cycle |
-| **QR code** | Image file/artifact encoding the link, for printed invoices | When the host renders files; otherwise the links are enough |
+| **The payment link (+ optional short link)** | Raw Qonto URL; Short.io URL only after explicit approval | Every cycle |
+| **QR code** | Image file/artifact encoding the raw Qonto URL | When the host renders files; otherwise the raw link is enough |
 | **Follow-up report** | Clicks vs cash table + proposed nudges | On demand / at D+2 |
 
 ## 🎬 Demo video

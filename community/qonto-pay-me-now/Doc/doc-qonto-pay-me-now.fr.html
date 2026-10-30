@@ -118,7 +118,7 @@
   <div class="grid4">
     <div class="pcard"><span class="n">1</span><h4>Devis accepté détecté</h4><p>Devis croisés avec les factures existantes — seuls les acceptés jamais facturés remontent, avec client, montant et date.</p></div>
     <div class="pcard"><span class="n">2</span><h4>Facture depuis le devis</h4><p>Brouillon d'abord, document RÉEL : relecture ligne par ligne, envoi seulement après ta confirmation explicite.</p></div>
-    <div class="pcard"><span class="n">3</span><h4>Payment link + QR</h4><p>Le client paie par carte ou virement en un clic. Lien court trackable Short.io + QR code pour les factures imprimées.</p></div>
+    <div class="pcard"><span class="n">3</span><h4>Payment link + QR</h4><p>URL Qonto brute et son QR par défaut. Short.io et suivi du payeur seulement après information et accord explicite.</p></div>
     <div class="pcard"><span class="n">4</span><h4>Suivi &amp; relance douce</h4><p>Cliqué mais impayé après 48 h → relance douce proposée, rédigée — jamais envoyée toute seule.</p></div>
   </div>
   <p style="margin-top:.8rem">Le cycle de paiement passe de « quand il y pense » à <strong>« il clique, il paie »</strong>.</p>
@@ -140,9 +140,11 @@
 <section>
   <h2>⚙️ Fonctionnement global</h2>
   <div class="diagram"><img src="../assets/flow.fr.svg" alt="Fonctionnement global en 6 étapes"></div>
+  <p>Ancien schéma : les règles de confidentialité ci-dessous remplacent son étape Short.io automatique/slug lisible et sa mention de payment links non pris en charge.</p>
   <h3>Ce qui rend le skill robuste sur données sales</h3>
   <ul>
-    <li><strong>Le différenciateur</strong> : la doc MCP officielle liste les payment links comme non supportés — <strong>ils fonctionnent</strong> (vérifié en production le 03/07). Le skill appelle <code>create_payment_link</code> directement, sans se fier à la doc</li>
+    <li><strong>Payment links</strong> : la création est prise en charge par le MCP Qonto. Suivre le schéma actuel et la documentation officielle ; si l'outil est indisponible, continuer avec la facture seule</li>
+    <li><strong>Confidentialité par défaut</strong> : URL Qonto brute et QR encodant cette URL, sans appel à Short.io. Avant de raccourcir le lien ou de lire les statistiques, expliquer que Short.io reçoit et stocke l'URL de paiement et suit les clics du payeur, puis demander un accord explicite dans la conversation en cours. Connecter le MCP ou confirmer l'envoi de la facture ne vaut pas accord. Après accord : slug aléatoire, sans identifiant de facture/client ni autre métadonnée Qonto. L'URL Qonto reste visible ; le QR l'encode toujours. Sans accord, les clics sont inconnus, pas « aucun clic »</li>
     <li><strong>Pas de devis accepté ?</strong> Le skill le dit et propose de partir d'une facture impayée existante — la suite du cycle est identique</li>
     <li><strong>Payment links non activés ?</strong> Activation unique expliquée (app Qonto), le cycle continue avec la facture seule</li>
     <li>Short.io ou Gmail absents → lien Qonto brut + texte prêt à copier, annoncé clairement — aucun tracking simulé</li>
@@ -177,8 +179,8 @@
   <div class="scroll"><table>
     <tr><th>Sortie</th><th>Format</th><th>Quand</th></tr>
     <tr><td><b>Réponse dans la conversation</b></td><td>Tableaux markdown : pipeline devis → facture → lien, matrice de suivi</td><td><strong>Toujours</strong> — c'est la base</td></tr>
-    <tr><td><b>Le payment link (+ lien court)</b></td><td>URL Qonto + URL courte Short.io, prêtes à partager</td><td>À chaque cycle</td></tr>
-    <tr><td><b>QR code</b></td><td>Fichier/artifact image encodant le lien, pour les factures imprimées</td><td>Si l'hôte affiche les fichiers ; sinon les liens suffisent</td></tr>
+    <tr><td><b>Le payment link (+ lien court optionnel)</b></td><td>URL Qonto brute ; URL Short.io seulement après accord explicite</td><td>À chaque cycle</td></tr>
+    <tr><td><b>QR code</b></td><td>Fichier/artifact image encodant l'URL Qonto brute</td><td>Si l'hôte affiche les fichiers ; sinon le lien brut suffit</td></tr>
     <tr><td><b>Rapport de suivi</b></td><td>Clics vs encaissements + relances proposées</td><td>Sur demande / à J+2</td></tr>
   </table></div>
 </section>

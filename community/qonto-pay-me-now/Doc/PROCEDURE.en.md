@@ -21,7 +21,7 @@
 2. Done — if the API refuses `create_payment_link`, the skill says so and continues invoice-only
 
 > 💡 **Optional**: connect the **Short.io** MCP (trackable short link + click stats) and **Gmail** (sending).
-> The skill detects them on its own; without them, the raw Qonto link and copy-ready text work fine.
+> Default: raw Qonto URL and QR encoding that URL, no Short.io calls. Before shortening or reading click stats, explain that Short.io receives and stores the payment URL and tracks payer clicks, then ask for explicit approval in the current conversation. Connection or invoice-send approval is not consent. Approved links use random slugs, no invoice/client identifiers or other Qonto metadata. Keep the raw URL visible; the QR always encodes it. Without approval, clicks are unknown, not "not clicked".
 
 ## 2️⃣ Typical usage (the "quote accepted" reflex, ~2 min)
 
@@ -30,7 +30,7 @@
 | 1 | Tell Claude: "**Any accepted quotes I haven't invoiced yet?**" | Quotes cross-checked against invoices — only the never-invoiced ones surface |
 | 2 | Review the **invoice draft** (lines, amounts, due date) | REAL document — you check before anything is sent |
 | 3 | Confirm explicitly ("yes, send it") | Invoice sent + **payment link** created (invoice number in the description) |
-| 4 | Share the **short link** (or the QR code for printed invoices) | The client pays by card or bank transfer, in one click |
+| 4 | Share the **raw Qonto link** or its QR; optionally approve Short.io after disclosure | Short link only after approval; QR still uses raw Qonto URL |
 | 5 | At D+2: "**Who clicked but didn't pay?**" | Clicks vs cash matrix + a gentle nudge proposed |
 
 ## 3️⃣ Copy-paste prompts
@@ -46,15 +46,15 @@
 | Output | Format | When |
 |---|---|---|
 | **Conversation reply** | Markdown tables: quote → invoice → link pipeline, follow-up matrix | **Always** — the baseline |
-| **The payment link (+ short link)** | Qonto URL + Short.io short URL, ready to share | Every cycle |
-| **QR code** | Image file/artifact encoding the link | When the host renders files; otherwise the links are enough |
+| **The payment link (+ optional short link)** | Raw Qonto URL; Short.io URL only after explicit approval | Every cycle |
+| **QR code** | Image file/artifact encoding the raw Qonto URL | When the host renders files; otherwise the raw link is enough |
 | **Follow-up report** | Clicks vs cash + proposed nudges (never sent on their own) | On demand / at D+2 |
 
 ## 5️⃣ Troubleshooting (known, verified quirks)
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| "The MCP docs say payment links aren't supported" | Docs lagging behind the API | **Verified live: `create_payment_link` works** — the skill calls it directly instead of trusting the doc |
+| Payment-link tool unavailable | Connector does not expose the tool | Follow current official docs and tool schema; continue invoice-only without a direct API workaround |
 | Error when creating the payment link | Feature not activated on the account | Qonto app → activate **Payment links** (one-time); meanwhile the skill continues invoice-only |
 | `list_transactions` fails | Missing `bank_account_id`/`iban` | `get_organization` first — the skill always does |
 | Huge responses / slowness | Pagination too wide | The skill paginates `per_page` ≤ 50 everywhere |

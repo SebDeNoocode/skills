@@ -21,7 +21,7 @@
 2. C'est tout — si l'API refuse `create_payment_link`, le skill l'explique et continue avec la facture seule
 
 > 💡 **Optionnel** : connecter les MCP **Short.io** (lien court trackable + stats de clics) et **Gmail** (envoi).
-> Le skill les détecte tout seul ; sans eux, le lien Qonto brut et le texte à copier suffisent.
+> Par défaut : URL Qonto brute et QR encodant cette URL, sans appel à Short.io. Avant de raccourcir le lien ou de lire les statistiques, expliquer que Short.io reçoit et stocke l'URL de paiement et suit les clics du payeur, puis demander un accord explicite dans la conversation en cours. Connecter le MCP ou confirmer l'envoi de la facture ne vaut pas accord. Après accord : slug aléatoire, sans identifiant de facture/client ni autre métadonnée Qonto. L'URL Qonto reste visible ; le QR l'encode toujours. Sans accord, les clics sont inconnus, pas « aucun clic ».
 
 ## 2️⃣ Utilisation type (le réflexe « devis accepté », ~2 min)
 
@@ -30,7 +30,7 @@
 | 1 | Dire à Claude : « **Des devis acceptés pas encore facturés ?** » | Devis croisés avec les factures — seuls les jamais facturés remontent |
 | 2 | Relire le **brouillon de facture** (lignes, montants, échéance) | Document RÉEL — tu vérifies avant tout envoi |
 | 3 | Confirmer explicitement (« oui, envoie ») | Facture envoyée + **payment link** créé (numéro de facture dans la description) |
-| 4 | Partager le **lien court** (ou le QR code pour l'imprimé) | Le client paie par carte ou virement, en un clic |
+| 4 | Partager le **lien Qonto brut** ou son QR ; Short.io seulement après information et accord | Lien court après accord ; QR toujours sur l'URL Qonto brute |
 | 5 | À J+2 : « **Qui a cliqué sans payer ?** » | Matrice clics vs encaissements + relance douce proposée |
 
 ## 3️⃣ Prompts à copier-coller
@@ -46,15 +46,15 @@
 | Sortie | Format | Quand |
 |---|---|---|
 | **Réponse dans la conversation** | Tableaux markdown : pipeline devis → facture → lien, matrice de suivi | **Toujours** — c'est la base |
-| **Le payment link (+ lien court)** | URL Qonto + URL courte Short.io, prêtes à partager | À chaque cycle |
-| **QR code** | Fichier/artifact image encodant le lien | Si l'hôte affiche les fichiers ; sinon les liens suffisent |
+| **Le payment link (+ lien court optionnel)** | URL Qonto brute ; URL Short.io seulement après accord explicite | À chaque cycle |
+| **QR code** | Fichier/artifact image encodant l'URL Qonto brute | Si l'hôte affiche les fichiers ; sinon le lien brut suffit |
 | **Rapport de suivi** | Clics vs encaissements + relances proposées (jamais envoyées seules) | Sur demande / à J+2 |
 
 ## 5️⃣ Dépannage (erreurs connues et vérifiées)
 
 | Symptôme | Cause | Solution |
 |---|---|---|
-| « La doc MCP dit que les payment links ne sont pas supportés » | Doc en retard sur l'API | **Vérifié le 03/07 : `create_payment_link` fonctionne** — le skill l'appelle directement, sans se fier à la doc |
+| Outil payment link indisponible | Connecteur sans cet outil | Suivre la documentation officielle et le schéma actuel ; continuer avec la facture seule, sans contournement par API directe |
 | Erreur à la création du payment link | Fonctionnalité pas activée sur le compte | App Qonto → activer les **Liens de paiement** (une fois) ; en attendant le skill continue avec la facture seule |
 | `list_transactions` échoue | `bank_account_id`/`iban` manquant | `get_organization` d'abord — le skill le fait systématiquement |
 | Grosses réponses / lenteurs | Pagination trop large | Le skill pagine `per_page` ≤ 50 partout |
