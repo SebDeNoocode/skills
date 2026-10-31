@@ -5,7 +5,7 @@ permissions:
   mcp:
     airtable: [search_bases, get_table_schema, create_field, update_records_for_table]
     hubspot: [get_companies, get_deals, update_company_properties]
-    qonto: [get_client, get_organization, list_client_invoices, list_clients, list_credit_notes, list_quotes, list_transactions]
+    qonto: [get_client, get_organization, list_client_invoices, list_clients, list_credit_notes, list_transactions]
   network: []
   env: []
   tools: [Read]
@@ -50,7 +50,7 @@ The formula is always disclosed with the results.
 - **Neither** → degraded mode: output the scored-clients report (step 2) in the conversation and stop before matching. Never pretend a CRM was read.
 
 ### 4. Assisted entity matching — THE guardrail
-- Propose CRM record ↔ Qonto client pairs on three keys: **normalized name**, **email/email domain**, **VAT number / SIREN** when present.
+- Propose CRM record ↔ Qonto client pairs on three keys: **normalized name**, **email/email domain**, **VAT number / tax identification number** (e.g. SIREN in France) when present.
 - Show the full mapping table with a confidence tag per pair: 🟢 exact (VAT/email match) · 🟡 likely (name match) · 🔴 ambiguous (skill ASKS, never picks).
 - The user confirms or edits the mapping **before anything else happens**. Reconciliation is assisted, NEVER silent. Unconfirmed pairs are excluded from analysis and writes.
 
