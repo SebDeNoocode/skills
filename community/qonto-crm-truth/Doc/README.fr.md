@@ -83,7 +83,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le mensonge du CRM → v
 | Idée | Effort | Note |
 |---|---|---|
 | Relance automatique des deals non encaissés via `qonto-invoice-chaser` | Faible | Cross-skill naturel — l'un découvre, l'autre agit |
-| Score payeur dans les devis (`list_quotes`) : alerter avant de signer un C | Moyen | La vérité au moment où elle sert le plus |
+| Score payeur dans les devis : alerter avant de signer un C | Moyen | La vérité au moment où elle sert le plus |
 | Historique du score (colonne datée) pour voir les clients qui se dégradent | Faible | Une écriture de plus, même garde-fou |
 | Support d'autres CRM (Notion, Salesforce…) via détection dynamique | Moyen | Même logique : lire, matcher, confirmer, écrire |
 

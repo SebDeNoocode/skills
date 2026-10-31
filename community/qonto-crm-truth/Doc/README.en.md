@@ -80,7 +80,7 @@ The ≤ 3-minute demo attached to the PR walks through: the CRM lie → bank tru
 ## 💡 Roadmap ideas
 
 - Chase won-but-never-cashed deals automatically via `qonto-invoice-chaser` — one skill discovers, the other acts
-- Payer score surfaced at quote time (`list_quotes`): warn before signing a C payer
+- Payer score surfaced at quote time: warn before signing a C payer
 - Score history (dated column) to spot clients drifting from A to C
 - More CRMs (Notion, Salesforce…) through the same dynamic detection — read, match, confirm, write
 
