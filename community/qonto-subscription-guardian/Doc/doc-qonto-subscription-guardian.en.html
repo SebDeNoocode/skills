@@ -151,7 +151,7 @@
     <tr><th>Step</th><th>Tool</th><th>Note</th></tr>
     <tr><td>Capped creation</td><td><code>create_card</code> (virtual, cap = price + margin)</td><td>Explicit consent + SCA, one card at a time</td></tr>
     <tr><td>Naming</td><td><code>update_card</code> → <code>SUB-&lt;Vendor&gt;</code></td><td><code>create_card</code> has no nickname field</td></tr>
-    <tr><td>Switch at the vendor</td><td><code>get_card_iframe_url</code> (PAN/CVV)</td><td>Manual step — short-lived URL, for your eyes only</td></tr>
+    <tr><td>Switch at the vendor</td><td>Qonto app (card details)</td><td>Manual step — the skill never handles card numbers</td></tr>
     <tr><td>Reversible pause</td><td><code>change_card_status</code> → <code>lock</code></td><td>Warns first: a declined charge can suspend the service</td></tr>
     <tr><td>Permanent removal</td><td><code>change_card_status</code> → <code>discard</code></td><td>The contract survives — capping ≠ cancelling</td></tr>
     <tr><td>Adjusting a cap</td><td>Qonto app only</td><td>Card limits are <b>not editable via MCP</b> — stated plainly</td></tr>
@@ -188,7 +188,7 @@
     <li><strong>Never</strong> creates a card (or card request) without explicit confirmation for THAT card in the current conversation; never presented as done while SCA confirmation is pending</li>
     <li>Plan check first, always: <code>list_cards</code> count + the 2/50/unlimited grid before any proposal — a number of cards that fits, never a bulk run</li>
     <li><strong>Capping ≠ cancelling</strong>: the contract survives the card — a declined charge can trigger vendor dunning or service suspension, stated BEFORE acting</li>
-    <li>Rehearsals: at most one demo card, <code>discard</code> at the end of the session; never show a full PAN (<code>get_card_iframe_url</code> is for the user's eyes only)</li>
+    <li>Rehearsals: at most one demo card, <code>discard</code> at the end of the session; never show a card number (the user reads it in the Qonto app)</li>
     <li>IBANs and card numbers masked (last 4 digits) · pagination ≤ 50 everywhere</li>
   </ul>
 </section>

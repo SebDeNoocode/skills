@@ -36,7 +36,7 @@ Every subscription charges whatever it wants on YOUR main card. This skill does 
 3. **Plan reminder**: the public 2/50/unlimited grid + the card count — the skill proposes a number of cards that fits the plan you announce
 4. **You pick** the subscriptions to protect, one by one
 5. **One capped card per subscription**: virtual `create_card`, monthly cap = price + margin (yearly: per-transaction cap); **each creation is an SCA action** — the call blocks until you confirm the Qonto push notification; nickname `SUB-<Vendor>` set right after via `update_card`
-6. **Switch**: change the payment method at each protected vendor (`get_card_iframe_url`, for your eyes only); final recap of the created cards
+6. **Switch**: change the payment method at each protected vendor (card details read in the Qonto app); final recap of the created cards
 
 ## 🏗 Functional diagram
 
@@ -59,7 +59,7 @@ Every subscription charges whatever it wants on YOUR main card. This skill does 
 |---|---|---|
 | Capped creation | `create_card` (virtual, cap = price + margin) | Explicit consent + SCA, one card at a time |
 | Naming | `update_card` → `SUB-<Vendor>` | `create_card` has no nickname field |
-| Switch at the vendor | `get_card_iframe_url` (PAN/CVV) | Manual step — short-lived URL, for your eyes only |
+| Switch at the vendor | Qonto app (card details) | Manual step — the skill never handles card numbers |
 | Reversible pause | `change_card_status` → `lock` | Warns first: a declined charge can suspend the service |
 | Permanent removal | `change_card_status` → `discard` | The contract survives — capping ≠ cancelling |
 | Adjusting a cap | Qonto app only | Card limits are **not editable via MCP** — stated plainly |
@@ -87,7 +87,7 @@ The ≤ 3-minute demo attached to the PR walks through: the problem → the cand
 - Plan check first, always: `list_cards` count + the 2/50/unlimited grid before any proposal — a number of cards that fits, never a bulk run
 - **Capping ≠ cancelling**: the contract survives the card — a declined charge can trigger vendor dunning or service suspension, stated BEFORE acting
 - Card numbers and IBANs masked (last 4 digits) · pagination ≤ 50 everywhere
-- `get_card_iframe_url` output is a short-lived credential for the user's eyes only — never echoed, logged or stored
+- Card numbers are never retrieved, echoed, logged or stored — the user reads them in the Qonto app
 
 ---
 

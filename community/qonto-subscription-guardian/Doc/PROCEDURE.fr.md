@@ -29,7 +29,7 @@
 | 3 | Choisir les abonnements à protéger | Toi seul décides — jamais de rafale, les cartes `SUB-` existantes ne sont pas reproposées |
 | 4 | Confirmer la carte n°1 explicitement | `create_card` virtuelle, plafond mensuel = prix actuel + petite marge (annuel : plafond par transaction) |
 | 5 | Sur l'**iPhone** : notification push Qonto → **confirmer (SCA)** | La carte `SUB-<Fournisseur>` existe, plafonnée ✅ — répéter les étapes 4-5 pour chaque abonnement choisi, **une SCA à chaque fois** |
-| 6 | Changer le moyen de paiement **chez chaque fournisseur** (étape manuelle) | `get_card_iframe_url` affiche le numéro de carte, pour tes yeux uniquement |
+| 6 | Changer le moyen de paiement **chez chaque fournisseur** (étape manuelle) | Les infos de la carte se lisent dans l'appli Qonto, jamais affichées par le skill |
 
 ## 3️⃣ Utilisations ponctuelles
 

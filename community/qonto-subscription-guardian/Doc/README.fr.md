@@ -36,7 +36,7 @@ Chaque abonnement prélève ce qu'il veut sur TA carte principale. Ce skill fait
 3. **Rappel du plan** : grille publique 2/50/illimité + comptage — le skill propose un nombre de cartes adapté au plan que tu annonces
 4. **Tu choisis** les abonnements à protéger, un par un
 5. **Carte plafonnée par abonnement** : `create_card` virtuelle, plafond mensuel = prix + marge (annuel : plafond par transaction) ; **chaque création exige la SCA** — notification push à confirmer dans l'app ; nickname `SUB-<Fournisseur>` posé juste après via `update_card`
-6. **Bascule** : changer le moyen de paiement chez chaque fournisseur protégé (`get_card_iframe_url`, pour tes yeux uniquement) ; récap final des cartes créées
+6. **Bascule** : changer le moyen de paiement chez chaque fournisseur protégé (infos de la carte lues dans l'appli Qonto) ; récap final des cartes créées
 
 ## 🏗 Schéma fonctionnel
 
@@ -50,7 +50,7 @@ Chaque abonnement prélève ce qu'il veut sur TA carte principale. Ce skill fait
 |---|---|---|
 | Création plafonnée | `create_card` (virtuelle, plafond = prix + marge) | Consentement explicite + SCA, une carte à la fois |
 | Nommage | `update_card` → `SUB-<Fournisseur>` | `create_card` n'a pas de champ nickname |
-| Bascule chez le fournisseur | `get_card_iframe_url` (PAN/CVV) | Étape manuelle — URL éphémère, pour tes yeux uniquement |
+| Bascule chez le fournisseur | Appli Qonto (infos de la carte) | Étape manuelle — le skill ne manipule jamais les numéros de carte |
 | Pause réversible | `change_card_status` → `lock` | Prévient d'abord : un prélèvement refusé peut suspendre le service |
 | Suppression définitive | `change_card_status` → `discard` | Le contrat, lui, survit — plafonner ≠ résilier |
 | Ajuster le plafond | App Qonto uniquement | Les plafonds ne sont **pas éditables via MCP** — dit tel quel |
@@ -79,7 +79,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : problème → liste des 
 - **Jamais** de création de carte (ou de demande) sans confirmation explicite pour CETTE carte dans la conversation en cours ; jamais présentée comme faite tant que la SCA n'est pas validée
 - Vérification du plan d'abord, toujours : comptage `list_cards` + grille 2/50/illimité avant toute proposition — nombre de cartes adapté, jamais de rafale
 - **Plafonner ≠ résilier** : le contrat survit à la carte — un prélèvement refusé peut déclencher relance ou suspension de service, le skill le dit AVANT
-- Répétitions : 1 carte de démo max, nommée clairement, `discard` en fin de session ; jamais de PAN complet à l'écran (`get_card_iframe_url` = pour tes yeux uniquement)
+- Répétitions : 1 carte de démo max, nommée clairement, `discard` en fin de session ; jamais de numéro de carte à l'écran (il se lit dans l'appli Qonto)
 - IBAN et numéros de carte masqués (4 derniers chiffres) · pagination ≤ 50 partout
 
 ---

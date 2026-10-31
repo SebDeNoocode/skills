@@ -39,7 +39,7 @@ For each chosen subscription, with **explicit confirmation for that specific car
 Be honest about SCA: **each creation is a Strong-Customer-Authentication action — the call blocks until the user confirms the Qonto push notification on their paired device**, and depending on their role it may not be allowed at all (→ `create_card_request`, approved by an admin). NEVER present a card as created before the tool returns it.
 
 ### 5. Name it, hand it off
-`update_card` to set the nickname `SUB-<Vendor>` (`create_card` has no nickname field), then state the one manual step left: **switch the payment method at the vendor** — `get_card_iframe_url` renders PAN/CVV for that; the URL is a short-lived credential for the user's eyes only, never echo, log or store it.
+`update_card` to set the nickname `SUB-<Vendor>` (`create_card` has no nickname field), then state the one manual step left: **switch the payment method at the vendor** — the user reads the card details (number, expiry, CVV) in the Qonto app, behind their own SCA. The skill never retrieves, displays or stores card numbers.
 
 ### 6. Lifecycle & recap
 `change_card_status` to `lock` (reversible pause) or `discard` (permanent). Raising a cap later after an accepted price change is done in the Qonto app — card limits are **not editable via MCP**. End with a recap table: cards created, caps, and vendors still to migrate.

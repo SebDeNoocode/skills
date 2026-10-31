@@ -166,7 +166,7 @@
     <tr><th>Étape</th><th>Outil</th><th>Note</th></tr>
     <tr><td>Création plafonnée</td><td><code>create_card</code> (virtuelle, plafond = prix + marge)</td><td>Consentement explicite + SCA, une carte à la fois</td></tr>
     <tr><td>Nommage</td><td><code>update_card</code> → <code>SUB-&lt;Fournisseur&gt;</code></td><td><code>create_card</code> n'a pas de champ nickname</td></tr>
-    <tr><td>Bascule chez le fournisseur</td><td><code>get_card_iframe_url</code> (PAN/CVV)</td><td>Étape manuelle — URL éphémère, pour tes yeux uniquement</td></tr>
+    <tr><td>Bascule chez le fournisseur</td><td>Appli Qonto (infos de la carte)</td><td>Étape manuelle — le skill ne manipule jamais les numéros de carte</td></tr>
     <tr><td>Pause réversible</td><td><code>change_card_status</code> → <code>lock</code></td><td>Prévient d'abord : un prélèvement refusé peut suspendre le service</td></tr>
     <tr><td>Suppression définitive</td><td><code>change_card_status</code> → <code>discard</code></td><td>Le contrat survit — plafonner ≠ résilier</td></tr>
     <tr><td>Ajuster le plafond</td><td>App Qonto uniquement</td><td>Les plafonds ne sont <b>pas éditables via MCP</b> — dit tel quel</td></tr>
@@ -203,7 +203,7 @@
     <li><strong>Jamais</strong> de création de carte (ou de demande) sans confirmation explicite pour CETTE carte dans la conversation en cours ; jamais présentée comme faite tant que la SCA n'est pas validée</li>
     <li>Vérification du plan d'abord, toujours : comptage <code>list_cards</code> + grille 2/50/illimité avant toute proposition — nombre de cartes adapté, jamais de rafale</li>
     <li><strong>Plafonner ≠ résilier</strong> : le contrat survit à la carte — un prélèvement refusé peut déclencher relance ou suspension de service, dit AVANT d'agir</li>
-    <li>Répétitions : 1 carte de démo max, <code>discard</code> en fin de session ; jamais de PAN complet à l'écran (<code>get_card_iframe_url</code> = pour les yeux de l'utilisateur uniquement)</li>
+    <li>Répétitions : 1 carte de démo max, <code>discard</code> en fin de session ; jamais de numéro de carte à l'écran (il se lit dans l'appli Qonto)</li>
     <li>IBAN et numéros de carte masqués (4 derniers chiffres) · pagination ≤ 50 partout</li>
   </ul>
 </section>

@@ -29,7 +29,7 @@
 | 3 | Pick the subscriptions to protect | You alone decide — never a bulk run, existing `SUB-` cards are never proposed twice |
 | 4 | Confirm card #1 explicitly | Virtual `create_card`, monthly cap = current price + a small margin (yearly: per-transaction cap) |
 | 5 | On your **phone**: Qonto push notification → **confirm (SCA)** | The `SUB-<Vendor>` card exists, capped ✅ — repeat steps 4-5 for each chosen subscription, **one SCA every time** |
-| 6 | Switch the payment method **at each vendor** (manual step) | `get_card_iframe_url` renders the card number — for your eyes only |
+| 6 | Switch the payment method **at each vendor** (manual step) | Card details are read in the Qonto app, never shown by the skill |
 
 ## 3️⃣ On-demand usage
 
