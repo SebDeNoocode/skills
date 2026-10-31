@@ -36,13 +36,13 @@ De l'argent littéralement récupéré — sur des frais que tu as déjà payés
 3. **Regroupement + justificatifs** : tableau par client (date · tiers · montant · TVA d'achat), totaux, et pour chaque ligne le **justificatif déjà attaché** récupéré (`list_transaction_attachments` + `get_attachment`) ou le manque signalé
 4. **Le choix fiscal** : débours vs frais refacturés — tableau comparatif affiché, régime **demandé** (ligne à ligne si mixte), majoration 5-10 % proposée (jamais sur un débours)
 5. **Brouillon** : `create_client_invoice` en BROUILLON — une ligne par frais (date, tiers, montant), TVA selon le régime choisi, ligne « frais de gestion » séparée. Rien n'est envoyé
-6. **Confirmation** : relecture ligne à ligne → envoi seulement si tu confirmes explicitement (`send_client_invoice`). En répétition : client fictif + brouillon + `delete_client_invoice`
+6. **Confirmation** : relecture ligne à ligne → envoi seulement si tu confirmes explicitement (`send_client_invoice`). En répétition : client fictif + brouillon, supprimé à la main dans Qonto
 
 ## 🏗 Schéma fonctionnel
 
 ![Schéma fonctionnel](assets/functional.fr.png)
 
-**Le point clé de sécurité** : le trait plein (lecture) ne présente aucun risque ; le trait pointillé (écriture) ne produit qu'un **brouillon de facture** dans Qonto. L'envoi au client exige ta confirmation explicite dans la conversation — et les factures créées via MCP étant réelles, les répétitions se font sur client fictif puis `delete_client_invoice`.
+**Le point clé de sécurité** : le trait plein (lecture) ne présente aucun risque ; le trait pointillé (écriture) ne produit qu'un **brouillon de facture** dans Qonto. L'envoi au client exige ta confirmation explicite dans la conversation — et les factures créées via MCP étant réelles, les répétitions se font sur client fictif, puis le brouillon est supprimé à la main dans Qonto.
 
 ## ⚖️ Débours vs frais refacturés (le tableau que le skill affiche)
 
@@ -90,7 +90,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (les frais 
 
 ## 🛡 Garde-fous
 
-- Les factures créées via MCP sont **réelles** : brouillon jusqu'à confirmation explicite, jamais présenté comme envoyé, répétitions sur client fictif + `delete_client_invoice`
+- Les factures créées via MCP sont **réelles** : brouillon jusqu'à confirmation explicite, jamais présenté comme envoyé, répétitions sur client fictif, brouillon supprimé à la main dans Qonto
 - **Jamais d'attribution silencieuse** : chaque frais douteux est demandé ; rien d'inventé (ni montant, ni justificatif)
 - Le choix débours/refacturation t'appartient (avec ton expert-comptable) — le skill explique et demande
 - Dégradation honnête (pas de labels, compte vide, pays ≠ FR) ; IBAN masqués (4 derniers chiffres) ; pagination ≤ 50 partout

@@ -36,13 +36,13 @@ Would someone use this on a Monday morning? It's the end-of-quarter ritual that 
 3. **Group + receipts**: per-client table (date · counterparty · amount · purchase VAT), totals, and for each line the **already-attached receipt** retrieved (`list_transaction_attachments` + `get_attachment`) or the gap flagged
 4. **The VAT choice**: disbursement vs rebilled expense — comparison table shown, regime **asked** (per line when mixed), 5-10% handling fee offered (never on a disbursement)
 5. **Draft**: `create_client_invoice` as a DRAFT — one line per expense (date, counterparty, amount), VAT per the chosen regime, separate handling-fee line. Nothing is sent
-6. **Confirm**: line-by-line review → sending only on explicit confirmation (`send_client_invoice`). Rehearsals: fictitious client + draft + `delete_client_invoice`
+6. **Confirm**: line-by-line review → sending only on explicit confirmation (`send_client_invoice`). Rehearsals: fictitious client + draft, deleted manually in Qonto
 
 ## 🏗 Functional diagram
 
 ![Functional diagram](assets/functional.en.png)
 
-**The security model**: solid arrows are risk-free reads; the dashed arrow only produces a **draft invoice** inside Qonto. Sending it to the client requires explicit confirmation in the conversation — and since MCP-created invoices are real, rehearsals run on a fictitious client and end with `delete_client_invoice`.
+**The security model**: solid arrows are risk-free reads; the dashed arrow only produces a **draft invoice** inside Qonto. Sending it to the client requires explicit confirmation in the conversation — and since MCP-created invoices are real, rehearsals run on a fictitious client and the draft is then deleted manually in Qonto.
 
 ## ⚖️ Disbursement vs rebilled expense (the table the skill shows)
 
@@ -88,7 +88,7 @@ The ≤ 3-minute demo attached to the PR walks through: the problem (advanced ex
 
 ## 🛡 Guardrails
 
-- MCP-created invoices are **real**: draft until explicit confirmation, never presented as sent, rehearsals on a fictitious client + `delete_client_invoice`
+- MCP-created invoices are **real**: draft until explicit confirmation, never presented as sent, rehearsals on a fictitious client, draft deleted manually in Qonto
 - **No silent attribution, ever**: every uncertain expense is asked; nothing invented — no amount, no receipt, no client
 - The disbursement/rebill choice belongs to the user (with their accountant) — the skill explains and asks
 - Honest degradation (no labels, empty account, non-French country) · IBANs masked (last 4 digits) · pagination ≤ 50 everywhere

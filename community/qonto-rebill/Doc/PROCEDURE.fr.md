@@ -58,10 +58,9 @@
 | `list_transactions` échoue d'entrée | `bank_account_id`/`iban` manquant | Normal — le skill appelle toujours `get_organization` d'abord |
 | Réponses énormes / tronquées | Pagination trop large | Le skill pagine `per_page` ≤ 50 partout |
 | Un frais de fin de trimestre manque | Frais carte réglé 1-2 jours plus tard | Le skill regroupe par `emitted_at`, pas `settled_at` |
-| `403 missing oauth scope` sur `list_cash_flow_categories` | Hors périmètre du connecteur claude.ai | Normal — le skill travaille avec les labels |
 | Client introuvable pour la facture | Absent de Facturation → Clients | Le créer dans l'app (Facturation → Clients), puis relancer le skill |
 | Justificatif absent sur une ligne | Pièce jamais attachée à la transaction | Lancer `qonto-receipt-hunter` avant de refacturer |
-| Une facture de test traîne | Les factures MCP sont **réelles** | Répétitions : client fictif + brouillon + `delete_client_invoice` |
+| Une facture de test traîne | Les factures MCP sont **réelles** | Répétitions : client fictif + brouillon, puis suppression manuelle dans Qonto |
 
 ## 🔒 Rappel sécurité
 

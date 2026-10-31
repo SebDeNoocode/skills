@@ -58,10 +58,9 @@
 | `list_transactions` fails immediately | Missing `bank_account_id`/`iban` | Expected — the skill always calls `get_organization` first |
 | Huge / truncated responses | Page size too large | The skill paginates `per_page` ≤ 50 everywhere |
 | An end-of-quarter expense is missing | Card expense settled 1-2 days later | The skill groups by `emitted_at`, not `settled_at` |
-| `403 missing oauth scope` on `list_cash_flow_categories` | Outside the claude.ai connector scope | Expected — the skill works with labels |
 | Client not found for the invoice | Missing from Invoicing → Clients | Create it in the app (Invoicing → Clients), then re-run the skill |
 | Receipt missing on a line | Document never attached to the transaction | Run `qonto-receipt-hunter` before rebilling |
-| A test invoice lingers | MCP-created invoices are **real** | Rehearsals: fictitious client + draft + `delete_client_invoice` |
+| A test invoice lingers | MCP-created invoices are **real** | Rehearsals: fictitious client + draft, then delete it manually in Qonto |
 
 ## 🔒 Security reminder
 

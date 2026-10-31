@@ -155,7 +155,7 @@
   <div class="diagram"><img src="../assets/functional.fr.svg" alt="Schéma fonctionnel"></div>
   <div class="secu" style="margin-top:1rem">
     <div class="lock">🔒</div>
-    <p><b>Une seule écriture, et c'est un brouillon :</b> la lecture est sans risque ; l'écriture (<b>create_client_invoice</b>) ne produit qu'un brouillon dans Qonto. L'envoi au client exige la confirmation explicite dans la conversation. Les factures MCP étant réelles, les répétitions se font sur client fictif puis <b>delete_client_invoice</b>.</p>
+    <p><b>Une seule écriture, et c'est un brouillon :</b> la lecture est sans risque ; l'écriture (<b>create_client_invoice</b>) ne produit qu'un brouillon dans Qonto. L'envoi au client exige la confirmation explicite dans la conversation. Les factures MCP étant réelles, les répétitions se font sur client fictif, puis le brouillon est supprimé à la main dans Qonto.</p>
   </div>
 </section>
 
@@ -204,7 +204,7 @@
 <section>
   <h2>🛡 Garde-fous</h2>
   <ul>
-    <li>Les factures créées via MCP sont <strong>réelles</strong> : brouillon jusqu'à confirmation explicite, jamais présenté comme envoyé, répétitions sur client fictif + <code>delete_client_invoice</code></li>
+    <li>Les factures créées via MCP sont <strong>réelles</strong> : brouillon jusqu'à confirmation explicite, jamais présenté comme envoyé, répétitions sur client fictif, brouillon supprimé à la main dans Qonto</li>
     <li><strong>Jamais d'attribution silencieuse</strong> : chaque frais douteux est demandé ; rien d'inventé — ni montant, ni justificatif, ni client</li>
     <li>Le choix débours/refacturation appartient à l'utilisateur (avec son expert-comptable) — le skill explique et demande</li>
     <li>Dégradation honnête (pas de labels, compte vide, pays ≠ FR) · IBAN masqués (4 derniers chiffres) · pagination ≤ 50</li>

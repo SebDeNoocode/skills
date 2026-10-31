@@ -141,7 +141,7 @@
   <div class="diagram"><img src="../assets/functional.en.svg" alt="Functional diagram"></div>
   <div class="secu" style="margin-top:1rem">
     <div class="lock">🔒</div>
-    <p><b>One write, and it's a draft:</b> reads are risk-free; the write (<b>create_client_invoice</b>) only produces a draft inside Qonto. Sending it to the client requires explicit confirmation in the conversation. Since MCP-created invoices are real, rehearsals run on a fictitious client and end with <b>delete_client_invoice</b>.</p>
+    <p><b>One write, and it's a draft:</b> reads are risk-free; the write (<b>create_client_invoice</b>) only produces a draft inside Qonto. Sending it to the client requires explicit confirmation in the conversation. Since MCP-created invoices are real, rehearsals run on a fictitious client and the draft is then deleted manually in Qonto.</p>
   </div>
 </section>
 
@@ -190,7 +190,7 @@
 <section>
   <h2>🛡 Guardrails</h2>
   <ul>
-    <li>MCP-created invoices are <strong>real</strong>: draft until explicit confirmation, never presented as sent, rehearsals on a fictitious client + <code>delete_client_invoice</code></li>
+    <li>MCP-created invoices are <strong>real</strong>: draft until explicit confirmation, never presented as sent, rehearsals on a fictitious client, draft deleted manually in Qonto</li>
     <li><strong>No silent attribution, ever</strong>: every uncertain expense is asked; nothing invented — no amount, no receipt, no client</li>
     <li>The disbursement/rebill choice belongs to the user (with their accountant) — the skill explains and asks</li>
     <li>Honest degradation (no labels, empty account, non-French country) · IBANs masked (last 4 digits) · pagination ≤ 50</li>
