@@ -81,7 +81,7 @@ The ≤ 3-minute demo attached to the PR walks through: the problem (advanced ex
 ## 💡 Roadmap ideas
 
 - Learning "rebillable" counterparties per client — accepted attributions pre-fill the next quarter
-- Pre-approval quotes (`create_quote`) for large advances — client signs off before you pay
+- Pre-approval quotes for large advances — client signs off before you pay
 - A scheduled monthly/quarterly ritual: "anything to rebill this month?"
 - Chaining: `qonto-receipt-hunter` before (complete the receipts), `qonto-invoice-chaser` after (chase the payment)
 - Multi-currency expenses, converted at transaction rate and disclosed per line

@@ -83,7 +83,7 @@ La démo ≤ 3 min jointe à la PR suit le storyboard : le problème (les frais 
 | Idée | Effort | Note |
 |---|---|---|
 | Apprentissage des tiers « refacturables » par client | Moyen | Le skill mémorise les attributions acceptées et pré-remplit le trimestre suivant |
-| Devis d'accord préalable (`create_quote`) pour les gros frais | Faible | Faire valider la dépense par le client AVANT de l'avancer |
+| Devis d'accord préalable pour les gros frais | Faible | Faire valider la dépense par le client AVANT de l'avancer |
 | Rituel mensuel/trimestriel automatique | Faible | Un prompt planifié : « frais à refacturer ce mois-ci ? » |
 | Chaînage : `qonto-receipt-hunter` avant, `qonto-invoice-chaser` après | Faible | Justificatifs complets → facture → relance de paiement |
 | Frais en devises | Moyen | Conversion au taux de la transaction, mention sur la ligne |
