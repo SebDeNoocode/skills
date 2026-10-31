@@ -56,7 +56,6 @@
 |---|---|---|
 | `list_transactions` fails right away | Missing `bank_account_id`/`iban` | The skill always calls `get_organization` first |
 | PSP fees nowhere in the debits | Shopify Payments nets its fees **inside** the payout — no separate debit | Effective rate derived from gross vs net (needs the Shopify MCP); otherwise shown as "unknown, not zero". See also `qonto-shopify-bridge` for payout↔bank reconciliation |
-| `403 missing oauth scope` on `list_cash_flow_categories` | Outside the claude.ai connector scope | Expected — the skill classifies by normalized counterparty and labels instead |
 | Huge / truncated responses | Pagination too wide | `per_page` ≤ 50 everywhere, 3-month windows |
 | Card-paid shipping missing on the expected date | `emitted_at` vs `settled_at` drift (1–2 days) | The skill reconciles on `emitted_at` |
 | Shopify tool "update_product" not found | Spelling: Shopify tools are **hyphenated** | `update-product`, `get-product`, `run-analytics-query` |

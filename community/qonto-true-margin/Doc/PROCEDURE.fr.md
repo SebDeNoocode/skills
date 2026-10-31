@@ -56,7 +56,6 @@
 |---|---|---|
 | `list_transactions` échoue d'emblée | `bank_account_id`/`iban` manquant | Le skill appelle toujours `get_organization` en premier |
 | Frais PSP introuvables dans les débits | Shopify Payments nette ses fees **dans** le payout — pas de débit séparé | Taux effectif dérivé du brut vs net (MCP Shopify requis) ; sinon affiché « inconnu, pas nul ». Voir aussi `qonto-shopify-bridge` pour le rapprochement payouts↔banque |
-| `403 missing oauth scope` sur `list_cash_flow_categories` | Hors périmètre du connecteur claude.ai | Normal — le skill classe par tiers normalisé et labels à la place |
 | Réponses énormes / tronquées | Pagination trop large | `per_page` ≤ 50 partout, fenêtres de 3 mois |
 | Transport payé par carte introuvable à la date attendue | Décalage `emitted_at` vs `settled_at` (1-2 j) | Le skill rapproche par `emitted_at` |
 | L'outil Shopify « update_product » n'existe pas | Graphie : les outils Shopify sont **à tirets** | `update-product`, `get-product`, `run-analytics-query` |
